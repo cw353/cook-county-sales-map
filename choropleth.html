@@ -22,8 +22,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.css" integrity="sha512-ERJ24eirtxblVa8OFgLvEo5POXA4KjIH9dFD1RjXL0FbTr5PkpBYTnIMFGhhWdmGdXOUlxQhLu/S0BiPsbjAIA==" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.js" integrity="sha512-msnSqRmMNIELIn0wnF4k9rY12rzfwi4Ak0CWgx0xr4WPF5x/oUMNV+m+/2UWJSobC5zKqngmtBeuCtcUxkeSlQ==" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.css" integrity="sha512-ov430Sdjmh6nk7i0pfdpzBiSi7KFhMC5oiO5eEB7YmzcmPCLJySjYdKu4DCRMVLsEGfP9eGx7NRyLgqykhuruA==" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/spin@0.0.1/dist/spin.min.js" integrity="sha512-V8YgI4rsECe0shqE5P2p/ecolN3asrnTMTChlJ1pwxjrtc2nxJyYDP3k55/9Yxp+qsTDUMrUoAd7q62sC998Gw==" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-spin@1.1.0/leaflet.spin.min.js" integrity="sha512-TE8MLJ2OHviA+LS4tvJhEF9CMdo91z6PupBEWDeXmHTiHmNnKYjzvGcH/dy5+gSLUOK0Rb78z8uzbFS3tvlMdQ==" crossorigin="anonymous"></script>
 
   <!-- data -->
   <script src="data/sales_data.js"></script>
@@ -48,6 +46,9 @@
     .info h4 {
       margin: 0 0 5px;
       color: #777;
+      text-align: center;
+    }
+    .info p {
       text-align: center;
     }
     .legend {
@@ -98,7 +99,7 @@
       const usd_formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        /*maximumFractionDigits: 2,*/
+        maximumFractionDigits: 0,
       });
       const count_formatter = new Intl.NumberFormat('en-US');
 
@@ -139,17 +140,57 @@
 
       const saleFeatures = {
         "mean": new USDFeature("Average Sale Price"),
-        "median": new USDFeature("Average Sale Price"),
+        "median": new USDFeature("Median Sale Price"),
         "count": new CountFeature("Number of Sales"),
       }
 
       const geojson = {
-        "By Assessor Neighborhood": { geojson: neighborhoods, key: "nbhd_code" },
-        "By Community Area": { geojson: communities, key: "community" },
-        "By Ward": { geojson: wards, key: "ward" },
+        "By Assessor Neighborhood": { geojson: neighborhoods, key: "nbhd_code", keyLabel: "Assessor Neighborhood" },
+        "By Community Area": { geojson: communities, key: "community", keyLabel: "Community Area" },
+        "By Ward": { geojson: wards, key: "ward", keyLabel: "Ward" },
       };
 
-      function createChoropleth(boundary, data, attributeName, attribute) {
+      const info = L.control({position: "topright"});
+      info.onAdd = function (map) {
+        this._div = L.DomUtil.create("div", "info");
+        this.update();
+        return this._div;
+      };
+      function get_info(data, attributes, summary) {
+        const items = [];
+        console.log(summary);
+        for (attr in attributes) {
+          const label = summary ? ("Overall " + attributes[attr].getLabel()) : attributes[attr].getLabel();
+          items.push(`<b>${label}</b>: ${attributes[attr].display(data ? data[attr] : null)}`);
+        }
+        return items.join("<br>");
+      }
+      info.update = function(title, data, attributes, summary=false) {
+        this._div.innerHTML = `<h4>${title}</h4>`;
+        this._div.innerHTML += get_info(data, attributes, summary);
+        if (summary) {
+          this._div.innerHTML += "<p class='italic'>Hover over an area to see details.</p>";
+        }
+      };
+
+      function highlightFeature(e) {
+        var layer = e.target;
+        layer.setStyle({
+          weight: 5,
+          color: '#666',
+          dashArray: '',
+          fillOpacity: 0.7
+        });
+        layer.bringToFront();
+      }
+      function resetHighlight(parent, e) {
+        parent.resetStyle(e.target);
+      }
+      function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds());
+      }
+
+      function createChoropleth(boundary, data, attributeName, attributes) {
         const choroplethLayer = L.choropleth(boundary.geojson, {
           valueProperty: function (feature) {
             const key = feature.properties[boundary.key];
@@ -164,11 +205,27 @@
             fillOpacity: 0.7,
           },
         });
+        const summarize = function() {
+          info.update(`${boundary.keyLabel} Summary`, data["total"], attributes, true);
+        }
         choroplethLayer.eachLayer(function (layer) {
           const key = layer.feature.properties[boundary.key];
-          layer.bindTooltip(data[key]
-            ? "key is " + key + `, ${attributeName} is ` + data[key][attributeName]
-            : "no data");
+          layer.on({
+            mouseover: function(e) {
+              highlightFeature(e);
+              info.update(`${boundary.keyLabel} ${key}`, data[key], attributes);
+            },
+            mouseout: function(e) {
+              resetHighlight(choroplethLayer, e);
+              summarize();
+            },
+            click: zoomToFeature
+          });
+        });
+        choroplethLayer.on({
+          add: function() {
+            summarize();
+          }
         });
         return choroplethLayer;
       }
@@ -181,7 +238,7 @@
             obj.children.push(
               {
                 label: attribute,
-                layer: createChoropleth(geojson[obj.label], obj._data, attribute, child._attr[attribute]),
+                layer: createChoropleth(geojson[obj.label], obj._data, attribute, child._attr),
                 radioGroup: "choropleth",
               });
           }
@@ -194,7 +251,7 @@
 
       const overlays = [
         {
-          label: "Sale Prices",
+          label: "Recent Sale Prices for Major Class 2",
           children: [
             { label: "By Assessor Neighborhood",  _data: sales_by_nbhd, _attr: saleFeatures },
             { label: "By Community Area", _data: sales_by_community, _attr: saleFeatures },
@@ -215,6 +272,12 @@
           hideSingleBase: true,
         }
       ).addTo(map);
+
+      L.control.defaultExtent().addTo(map);
+
+      info.addTo(map);
+
+      layerControlTree._layers[1].layer.addTo(map);
 
   </script>
 
