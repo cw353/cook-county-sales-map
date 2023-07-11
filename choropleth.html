@@ -99,6 +99,8 @@
       const map = new L.Map('map', {
         center: { lat: 41.813802, lng: -87.73819 },
         zoom: 9.5,
+        zoomDelta: 0.5,
+        zoomSnap: 0.5,
       });
 
       const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -155,10 +157,14 @@
       }
 
       const geojson = {
-        "By Assessor Neighborhood": { geojson: neighborhoods, key: "nbhd_code", keyLabel: "Assessor Neighborhood" },
-        "By Community Area": { geojson: communities, key: "community", keyLabel: "Community Area" },
-        "By Ward": { geojson: wards, key: "ward", keyLabel: "Ward" },
+        "By Assessor Neighborhood": { geojson: neighborhoods, key: "nbhd_code", keyLabel: "Assessor Neighborhood", center: { lat: 41.813802, lng: -87.73819 }, zoom: 9.5, },
+        "By Community Area": { geojson: communities, key: "community", keyLabel: "Community Area", center: { lat: 41.81709, lng: -87.68149 }, zoom: 10.5, },
+        "By Ward": { geojson: wards, key: "ward", keyLabel: "Ward", center: { lat: 41.81709, lng: -87.68149 }, zoom: 10.5, },
       };
+      map.on("click", () => {
+        console.log(map.getCenter());
+        console.log(map.getZoom());
+      });
 
       const legend = L.control({position: "bottomleft"});
       legend.onAdd = function (map) {
@@ -216,6 +222,8 @@
         }
       };
 
+      const defaultExtentControl = L.control.defaultExtent().addTo(map);
+
       const initialFillOpacity = 0.7;
       function highlightFeature(e) {
         var layer = e.target;
@@ -269,6 +277,8 @@
         });
         choroplethLayer.on({
           add: function() {
+            defaultExtentControl.setCenter(boundary.center);
+            defaultExtentControl.setZoom(boundary.zoom);
             summarize();
             updateChoroplethLegend(choroplethLayer.options.colors, choroplethLayer.options.limits, attributes[attributeName].getLabel(), attributes[attributeName].display);
           }
@@ -320,8 +330,6 @@
           hideSingleBase: true,
         }
       ).addTo(map);
-
-      L.control.defaultExtent().addTo(map);
 
       info.addTo(map);
 
