@@ -26,6 +26,7 @@
 
   <!-- data -->
   <script src="data/sales_data.js"></script>
+  <script src="data/assessed_data.js"></script>
   <script src="data/communities.js"></script>
   <script src="data/neighborhoods.js"></script>
   <script src="data/wards.js"></script>
@@ -148,12 +149,6 @@
         constructor(label) {
           super(label, numeric_value, (val) => numeric_display(val, count_formatter));
         }
-      }
-
-      const saleFeatures = {
-        "mean": new USDFeature("Average Sale Price"),
-        "median": new USDFeature("Median Sale Price"),
-        "count": new CountFeature("Number of Sales"),
       }
 
       const geojson = {
@@ -306,15 +301,56 @@
         }
       }
 
+      const saleFeatures = {
+        "mean": new USDFeature("Average Sale Price"),
+        "median": new USDFeature("Median Sale Price"),
+        "count": new CountFeature("Number of Sales"),
+      };
+
+      const assessedFeatures = {
+        "mean": new USDFeature("Average Assessed Value"),
+        "median": new USDFeature("Median Assessed Value"),
+        "count": new CountFeature("Number of Properties"),
+      };
+
       const overlays = [
         {
           label: "Recent Sale Prices for Major Class 2",
           children: [
-            { label: "By Assessor Neighborhood",  _data: sales_by_nbhd, _attr: saleFeatures },
-            { label: "By Community Area", _data: sales_by_community, _attr: saleFeatures },
-            { label: "By Ward", _data: sales_by_ward, _attr: saleFeatures },
+            { label: "By Assessor Neighborhood",  _data: sales_by_nbhd, _attr: saleFeatures, collapsed: true },
+            { label: "By Community Area", _data: sales_by_community, _attr: saleFeatures, collapsed: true },
+            { label: "By Ward", _data: sales_by_ward, _attr: saleFeatures, collapsed: true },
+          ],
+        },
+        {
+          label: "2022 Assessed Values",
+          children: [
+            {
+              label: "Certified Total Value",
+              children: [
+                { label: "By Assessor Neighborhood",  _data: assessed_by_nbhd["certified_tot"], _attr: assessedFeatures, collapsed: true },
+                { label: "By Community Area", _data: assessed_by_community["certified_tot"], _attr: assessedFeatures, collapsed: true },
+                { label: "By Ward", _data: assessed_by_ward["certified_tot"], _attr: assessedFeatures, collapsed: true },
+              ],
+            },
+            {
+              label: "Certified Land Value",
+              children: [
+                { label: "By Assessor Neighborhood",  _data: assessed_by_nbhd["certified_land"], _attr: assessedFeatures, collapsed: true },
+                { label: "By Community Area", _data: assessed_by_community["certified_land"], _attr: assessedFeatures, collapsed: true },
+                { label: "By Ward", _data: assessed_by_ward["certified_land"], _attr: assessedFeatures, collapsed: true },
+              ],
+            },
+            {
+              label: "Certified Building Value",
+              children: [
+                { label: "By Assessor Neighborhood",  _data: assessed_by_nbhd["certified_bldg"], _attr: assessedFeatures, collapsed: true },
+                { label: "By Community Area", _data: assessed_by_community["certified_bldg"], _attr: assessedFeatures, collapsed: true },
+                { label: "By Ward", _data: assessed_by_ward["certified_bldg"], _attr: assessedFeatures, collapsed: true },
+              ],
+            }
           ]
-        }
+        },
       ];
 
       const choroplethList = [];
