@@ -63,7 +63,6 @@
       opacity: 0.7;
       border-left: 1px solid black;
       border-right: 1px solid black;
-      /*border-top: 1px solid black;*/
     }
     .legend i:first-of-type {
       border-top: 1px solid black;
@@ -150,6 +149,40 @@
         "By Ward": { geojson: wards, key: "ward", keyLabel: "Ward" },
       };
 
+      const legend = L.control({position: "bottomleft"});
+      legend.onAdd = function (map) {
+        this._div = L.DomUtil.create("div", "info legend");
+        this.update();
+        return this._div;
+      }
+      legend.update = function(colors = null, labels = null, title = "Legend") {
+        if (colors == null || labels == null || colors.length !== labels.length) {
+          this._div.innerHTML = "";
+        } else {
+          this._div.innerHTML = `<h4>${title}</h4>`;
+          for (let i = 0; i < colors.length; i++) {
+            this._div.innerHTML += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
+          }
+        }
+      };
+      legend.addTo(map);
+      // Precondition: the data represented in the choropleth is in integer format
+      // (to allow truncation without loss of accuracy)
+      function updateChoroplethLegend(colors, limits, title, display = null) {
+        const labels = ["unknown"];
+        for (let i = 0; i < limits.length; i++) {
+          let label = "";
+          if (i > 0) {
+            label += (display ? display(Math.trunc(limits[i-1])+1) : Math.trunc(limits[i-1])+1) + "&ndash; ";
+          } else {
+            label += "&le; "
+          }
+          label += display ? display(Math.trunc(limits[i])) : Math.trunc(limits[i]);
+          labels.push(label);
+        }
+        legend.update([null].concat(colors), labels, title);
+      }
+      
       const info = L.control({position: "topright"});
       info.onAdd = function (map) {
         this._div = L.DomUtil.create("div", "info");
@@ -158,7 +191,6 @@
       };
       function get_info(data, attributes, summary) {
         const items = [];
-        console.log(summary);
         for (attr in attributes) {
           const label = summary ? ("Overall " + attributes[attr].getLabel()) : attributes[attr].getLabel();
           items.push(`<b>${label}</b>: ${attributes[attr].display(data ? data[attr] : null)}`);
@@ -225,26 +257,28 @@
         choroplethLayer.on({
           add: function() {
             summarize();
+            updateChoroplethLegend(choroplethLayer.options.colors, choroplethLayer.options.limits, attributes[attributeName].getLabel(), attributes[attributeName].display);
           }
         });
         return choroplethLayer;
       }
 
-      function populateChoropleths(obj) {
+      function populateChoropleths(obj, choroplethList) {
         if ("_data" in obj) {
           obj.children = [];
           for (attribute in child._attr) {
-            console.log("creating choropleth for " + obj["label"] + " => " + attribute);
+            const layer = createChoropleth(geojson[obj.label], obj._data, attribute, child._attr);
+            choroplethList.push(layer);
             obj.children.push(
               {
-                label: attribute,
-                layer: createChoropleth(geojson[obj.label], obj._data, attribute, child._attr),
+                label: child._attr[attribute].getLabel(),
+                layer: layer,
                 radioGroup: "choropleth",
               });
           }
         } else if ("children" in obj) {
           for (child of obj.children) {
-            populateChoropleths(child);
+            populateChoropleths(child, choroplethList);
           }
         }
       }
@@ -260,8 +294,9 @@
         }
       ];
 
+      const choroplethList = [];
       for (overlay of overlays) {
-        populateChoropleths(overlay);
+        populateChoropleths(overlay, choroplethList);
       }
 
       const layerControlTree = L.control.layers.tree(
@@ -277,7 +312,7 @@
 
       info.addTo(map);
 
-      layerControlTree._layers[1].layer.addTo(map);
+      choroplethList[0].addTo(map);
 
   </script>
 
