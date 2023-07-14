@@ -167,7 +167,7 @@
         this.update();
         return this._div;
       }
-      legend.update = function(colors = null, labels = null, title = "Legend") {
+      legend.update = function(colors = null, labels = null, title = "Legend", subtitle = "") {
         if (colors == null || labels == null || colors.length !== labels.length) {
           this._div.innerHTML = "";
         } else {
@@ -180,19 +180,19 @@
       legend.addTo(map);
       // Precondition: the data represented in the choropleth is in integer format
       // (to allow truncation without loss of accuracy)
-      function updateChoroplethLegend(colors, limits, title, display = null) {
+      function updateChoroplethLegend(colors, limits, title, subtitle, display = null) {
         const labels = ["unknown"];
         for (let i = 0; i < limits.length; i++) {
           let label = "";
           if (i > 0) {
-            label += (display ? display(Math.trunc(limits[i-1])+1) : Math.trunc(limits[i-1])+1) + "&ndash; ";
+            label += (display ? display(Math.trunc(limits[i-1])+1) : Math.trunc(limits[i-1])+1) + " &ndash; ";
           } else {
             label += "&le; "
           }
           label += display ? display(Math.trunc(limits[i])) : Math.trunc(limits[i]);
           labels.push(label);
         }
-        legend.update([null].concat(colors), labels, title);
+        legend.update([null].concat(colors), labels, title, subtitle);
       }
       
       const info = L.control({position: "topright"});
@@ -238,7 +238,7 @@
         map.fitBounds(e.target.getBounds());
       }
 
-      function createChoropleth(boundary, data, attributeName, attributes) {
+      function createChoropleth(boundary, data, attributeName, attributes, subtitle) {
         const choroplethLayer = L.choropleth(boundary.geojson, {
           valueProperty: function (feature) {
             const key = feature.properties[boundary.key];
@@ -275,18 +275,25 @@
             defaultExtentControl.setCenter(boundary.center);
             defaultExtentControl.setZoom(boundary.zoom);
             summarize();
-            updateChoroplethLegend(choroplethLayer.options.colors, choroplethLayer.options.limits, attributes[attributeName].getLabel(), attributes[attributeName].display);
+            updateChoroplethLegend(
+              choroplethLayer.options.colors,
+              choroplethLayer.options.limits,
+              attributes[attributeName].getLabel(),
+              subtitle,
+              attributes[attributeName].display,
+            );
           }
         });
         return choroplethLayer;
       }
 
-      function populateChoropleths(obj, choroplethList) {
+      function populateChoropleths(obj, choroplethList, subtitle = "") {
         if ("_data" in obj) {
           obj.children = [];
           for (attribute in child._attr) {
-            const layer = createChoropleth(geojson[obj.label], obj._data, attribute, child._attr);
+            const layer = createChoropleth(geojson[obj.label], obj._data, attribute, child._attr, subtitle);
             choroplethList.push(layer);
+            console.log(subtitle);
             obj.children.push(
               {
                 label: child._attr[attribute].getLabel(),
@@ -296,7 +303,7 @@
           }
         } else if ("children" in obj) {
           for (child of obj.children) {
-            populateChoropleths(child, choroplethList);
+            populateChoropleths(child, choroplethList, subtitle ? (subtitle + " - " + obj.label) : obj.label);
           }
         }
       }
