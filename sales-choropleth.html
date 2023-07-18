@@ -191,7 +191,7 @@
       };
       function get_info(data, attributes, summary) {
         const items = [];
-        for (attr in attributes) {
+        for (const attr in attributes) {
           const attributeProps = attributes[attr];
           const label = summary ? ("Overall " + attributeProps.getLabel()) : attributeProps.getLabel();
           items.push(`<b>${label}</b>: ${attributeProps.display(data ? data[attr] : null)}`);
@@ -250,12 +250,11 @@
       }
 
       function setChoropleths(year, selectedAttribute) {
-        for (child of children) {
+        for (const child of children) {
           child.layer.removeFrom(map);
         }
         children = [];
-        for (saleAttribute in saleAttributes) {
-          const attribute = saleAttribute;
+        for (const attribute in saleAttributes) {
           const attributeProps = saleAttributes[attribute];
           const choroplethLayer = L.choropleth(neighborhoods, {
             valueProperty: function (feature) {
