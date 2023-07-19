@@ -15,15 +15,15 @@
   <!-- leaflet-chloropleth and dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js" integrity="sha512-zInFF17qBFVvvvFpIfeBzo7Tj7+rQxLeTJDmbxjBz5/zIr89YVbTNelNhdTT+/DCrxoVzBeUPVFJsczKbB7sew==" crossorigin="anonymous"></script>
-  <!--script src="https://cdn.jsdelivr.net/npm/leaflet-choropleth@1.1.4/dist/choropleth.js" integrity="sha512-7wqXJ5fLDm47Tl7gRm/eoOCpAcfawcHxX64uE2kCGhgAGhTDqgTDZNXyuHxuy8F8dPjP4/PLB1/eobW6/gWZZw==" crossorigin="anonymous"></script-->
+  <script src="plugins/choropleth.js"></script>
 
   <!-- other Leaflet plugins -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.css" integrity="sha512-ERJ24eirtxblVa8OFgLvEo5POXA4KjIH9dFD1RjXL0FbTr5PkpBYTnIMFGhhWdmGdXOUlxQhLu/S0BiPsbjAIA==" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.js" integrity="sha512-ETs9/6gyO86T5BWV+frzCctOVKzUa8CalhT+rCnm0AARnAAMX72vS6ifbFaeZr7BdxogolRqCS99XPbF2ltaqg==" crossorigin="anonymous"></script>  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-groupedlayercontrol@0.6.1/dist/leaflet.groupedlayercontrol.min.css" integrity="sha512-yP7tTm3rX87fOK3iDh9K2RJTHsq6BfGZ8sFqRMIfsmmZVakOw483WyOKlRWVLjHCHEDIcEkp/U+cO3TnZ8oiuw==" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.css" integrity="sha512-ov430Sdjmh6nk7i0pfdpzBiSi7KFhMC5oiO5eEB7YmzcmPCLJySjYdKu4DCRMVLsEGfP9eGx7NRyLgqykhuruA==" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.js" integrity="sha512-msnSqRmMNIELIn0wnF4k9rY12rzfwi4Ak0CWgx0xr4WPF5x/oUMNV+m+/2UWJSobC5zKqngmtBeuCtcUxkeSlQ==" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.24.3/dist/plotly-basic.min.js" integrity="sha512-Qim/xu0OSUPEvOUcNVZoGTDa+m4Ll1EZ+DQhsmMTlMZIj7NxvwQl6pGY0/gwlj19w0KEZ0S8ymSWUpqarPYGBQ==" crossorigin="anonymous"></script>
   <script src="plugins/leaflet-timeline-slider.min.js"></script>
-  <script src="plugins/choropleth.js"></script>
 
   <!-- data -->
   <script src="data/sales.js"></script>
@@ -83,6 +83,10 @@
       text-align: center;
       font-weight: bold;
     }
+    .show-all-link {
+      font-style: italic;
+      cursor: pointer;
+    }
   </style>
 
 </head>
@@ -124,10 +128,11 @@
       }
 
       class Feature {
-        constructor(label, get_value, display) {
+        constructor(label, get_value, display, d3_format) {
           this.label = label;
           this.get_value = get_value;
           this.display = display;
+          this.d3_format = d3_format;
         }
         getLabel() {
           return this.label;
@@ -135,25 +140,27 @@
         getValue(val) {
           return this.get_value(val);
         }
+        getD3Format() {
+          return this.d3_format;
+        }
         display(val) {
           return this.get_display(val);
         }
       }
       class USDFeature extends Feature {
         constructor(label) {
-          super(label, numeric_value, (val) => numeric_display(val, usd_formatter));
+          super(label, numeric_value, (val) => numeric_display(val, usd_formatter), ":$,");
         }
       }
       class CountFeature extends Feature {
         constructor(label) {
-          super(label, numeric_value, (val) => numeric_display(val, count_formatter));
+          super(label, numeric_value, (val) => numeric_display(val, count_formatter), ":,");
         }
       }
 
       const legend = L.control({position: "bottomleft"});
       legend.onAdd = function (map) {
         this._div = L.DomUtil.create("div", "info legend");
-        this.update();
         return this._div;
       }
       legend.update = function(colors = null, labels = null, title = "Legend") {
@@ -183,14 +190,34 @@
         legend.update([null].concat(colors), labels, title);
       }
 
-      const info = L.control({position: "topright"});
+      const layerControlTree = L.control.layers.tree(
+        [ {label: "OpenStreetMap", layer: osmtiles }],
+        [],
+        {
+          collapsed: false,
+          hideSingleBase: true,
+        }
+      ).addTo(map);
+
+      let currentYear = 2012;
+      // TODO: reset geojson styles when calling summarize
+      const summarize = function() {
+        info.update(`Summary of<br>All Assessor Neighborhoods`, currentYear, sales_totals[currentYear], saleAttributes, true);
+        graph.update(sales_totals, currentAttribute, saleAttributes[currentAttribute], `${saleAttributes[currentAttribute].getLabel()}<br>for All Assessor Neighborhoods`);
+      }
+
+      const info = L.control({position: "topleft"});
       info.onAdd = function (map) {
         this._div = L.DomUtil.create("div", "info");
-        this.update();
+        $(info._div).on("click", ".show-all-link", summarize);
         return this._div;
       };
+      /*const showAllLink = L.DomUtil.create("span", "show-all-link");
+      showAllLink.innerHTML = "Click here to show a summary of<br>all assessor neighborhoods.";
+      showAllLink.addEventListener("click", summarize );*/
+      
       function get_info(data, attributes, summary) {
-        const items = [];
+        const items = [`<b>Year</b>: ${currentYear}`];
         for (const attr in attributes) {
           const attributeProps = attributes[attr];
           const label = summary ? ("Overall " + attributeProps.getLabel()) : attributeProps.getLabel();
@@ -199,12 +226,53 @@
         return items.join("<br>");
       }
       info.update = function(title, year, data, attributes, summary=false) {
-        this._div.innerHTML = `<h4>${title}</h4><h4>${year}</h4>`;
+        this._div.innerHTML = `<h4>${title}</h4>`;
+        this._div.innnerHTML += 
         this._div.innerHTML += get_info(data, attributes, summary);
         if (summary) {
-          this._div.innerHTML += "<p class='italic'>Hover over an area to see details.</p>";
+          this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
+        } else {
+          this._div.innerHTML += "<p class=show-all-link>Click here to show a summary<br>of all assessor neighborhoods.</p>"
         }
       };
+
+      const graph = L.control({position: "topright"});
+      graph.onAdd = function (map) {
+        this._div = L.DomUtil.create("div", "info graph");
+        return this._div;
+      };
+      // TODO: fix graph update so that it occurs every time currentAttribute changes 
+      graph.update = function(data, attribute, attributeProps, title) {
+        this._div.innerHTML = "";
+        const ylabel = attributeProps.getLabel();
+        if (data) {
+          const x = [];
+          const y = [];
+          for (const year in data) {
+            x.push(year);
+            y.push(data[year] ? data[year][attribute] : null);
+          }
+          const trace = {
+            x: x, y: y,
+            hovertemplate: `Year: %{x}<br>${ylabel}: %{y${attributeProps.getD3Format()}}<extra></extra>`,
+            hoverlabel: { align: "left" },
+          };
+          const layout = {
+            width: 300, height: 300,
+            margin: { b: 35, l: 45, r: 0, t: 50 },
+            xaxis: { title: { text: "YEAR", font: { size: 11, } }, tickfont: { size: 10 }, dtick: 2, },
+            yaxis: { title: { text: ylabel.toUpperCase(), font: { size: 11, } }, tickfont: { size: 10 } },
+            title: { text: title, font: { size: 13 }},
+          };
+          Plotly.newPlot(this._div,
+            [trace],
+            layout
+          );
+        } else {
+          this._div.innerHTML = "<span class='italic'>No data available to plot.</span>"
+        }
+      }
+      graph.addTo(map);
 
       const initialFillOpacity = 0.7;
       function highlightFeature(e) {
@@ -231,23 +299,10 @@
         "count": new CountFeature("Number of Sales"),
       };
 
-      const layerControlTree = L.control.layers.tree(
-        [ {label: "OpenStreetMap", layer: osmtiles }],
-        [],
-        {
-          collapsed: false,
-          hideSingleBase: true,
-        }
-      ).addTo(map);
-
       const initialYear = 2018;
       let currentAttribute = "mean";
 
       let children = [];
-
-      const summarize = function(year) {
-        info.update(`Assessor Neighborhood Summary`, year, sales_totals[year], saleAttributes, true);
-      }
 
       function setChoropleths(year, selectedAttribute) {
         for (const child of children) {
@@ -263,7 +318,7 @@
               return attributeProps.getValue(val);
             },
             scale: "viridis",
-            steps: 5,
+            steps: 10,
             mode: 'q',
             style: {
               color: '#fff',
@@ -274,16 +329,12 @@
           choroplethLayer.eachLayer(function (layer) {
             const key = layer.feature.properties.nbhd_code;
             layer.on({
-              mouseover: function(e) {
+              click: function(e) {
+                choroplethLayer.resetStyle();
                 highlightFeature(e);
-                info.update(`Assessor Neighborhood ${key}`, year, sales_by_nbhd[key] ? sales_by_nbhd[key][year] : null, saleAttributes);
+                info.update(`Details for<br>Assessor Neighborhood ${key}`, year, sales_by_nbhd[key] ? sales_by_nbhd[key][year] : null, saleAttributes);
+                graph.update(sales_by_nbhd[key], currentAttribute, saleAttributes[currentAttribute], `${saleAttributes[currentAttribute].getLabel()}<br>for Assessor Neighborhood ${key}`);
               },
-              mouseout: function(e) {
-                resetHighlight(e);
-                summarize(year);
-                //info.update();
-              },
-              click: zoomToFeature
             });
           });
           choroplethLayer.on({
@@ -318,8 +369,9 @@
       L.control.timelineSlider({
         timelineItems: ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"],
         changeMap: function({label, index, map}) {
+          currentYear = label;
           setChoropleths(label, currentAttribute);
-          summarize(label);
+          summarize();
         }
       })
       .addTo(map);
