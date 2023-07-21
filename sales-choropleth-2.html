@@ -23,6 +23,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.css" integrity="sha512-ov430Sdjmh6nk7i0pfdpzBiSi7KFhMC5oiO5eEB7YmzcmPCLJySjYdKu4DCRMVLsEGfP9eGx7NRyLgqykhuruA==" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.js" integrity="sha512-msnSqRmMNIELIn0wnF4k9rY12rzfwi4Ak0CWgx0xr4WPF5x/oUMNV+m+/2UWJSobC5zKqngmtBeuCtcUxkeSlQ==" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.24.3/dist/plotly-basic.min.js" integrity="sha512-Qim/xu0OSUPEvOUcNVZoGTDa+m4Ll1EZ+DQhsmMTlMZIj7NxvwQl6pGY0/gwlj19w0KEZ0S8ymSWUpqarPYGBQ==" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.css" integrity="sha512-89rME2doVsjKo1HDC+av4LHfqH2mFhXU5DUM71HT8/re8KxZe1EZf86+mDbhD3kIpaS0zVs0nKBZQIOIb/Xowg==" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.js" integrity="sha512-Yn7exzYqwK1hTlIWRvrCDS91kynaxb7/WR55buxeUdZp/DW9KHflTvkhxr3N0OcWoSaH/6ZBlV3PoVoghnho1A==" crossorigin="anonymous"></script>
   <script src="plugins/leaflet-timeline-slider.min.js"></script>
   <script src="plugins/L.Control.Opacity/L.Control.Opacity.js"></script>
 
@@ -402,6 +404,7 @@
       info.addTo(map); // topleft
       dataSelectControl.addTo(map); // topright
       timelineControl.addTo(map); // bottomright
+      L.control.resizer({ direction: 'se' }).addTo(map);
 
     </script>
 
