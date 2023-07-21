@@ -376,30 +376,29 @@
         });
       });
 
-      L.control.opacity(
-          { "<div class='opacity-control-label'>Layer Opacity</div>" : state.layer },
-          {
-            position: "bottomleft",
-            initialOpacity: state.fillOpacity,
-            updateOpacity: (layer, opacity) => updateState("fillOpacity", opacity),
-          },
-        ).addTo(map);
-      
-      legend.addTo(map);
-      info.addTo(map);
+      const opacityControl = L.control.opacity(
+        { "<div class='opacity-control-label'>Layer Opacity</div>" : state.layer },
+        {
+          position: "bottomleft",
+          initialOpacity: state.fillOpacity,
+          updateOpacity: (layer, opacity) => updateState("fillOpacity", opacity),
+        },
+      );
 
-      L.control.timelineSlider({
+      const timelineControl = L.control.timelineSlider({
+        position: "bottomright",
         timelineItems: ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"],
         changeMap: function({label, index, map}) {
           updateState("year", label);
         }
-      })
-      .addTo(map);
-
-      dataSelectControl.addTo(map);
+      });
       
-      // for testing only
-      map.on("click", () => updateState("attribute", "count"));
+      // add controls in order, proceeding clockwise from bottom left to bottom right
+      opacityControl.addTo(map); // bottomleft
+      legend.addTo(map); // bottomleft
+      info.addTo(map); // topleft
+      dataSelectControl.addTo(map); // topright
+      timelineControl.addTo(map); // bottomright
 
     </script>
 
