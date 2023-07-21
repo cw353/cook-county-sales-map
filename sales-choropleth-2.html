@@ -103,7 +103,6 @@
         zoom: 9.5,
         zoomDelta: 0.5,
         zoomSnap: 0.5,
-        doubleClickZoom: false,
       });
 
       const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -186,6 +185,27 @@
         "count": new CountFeature("Number of Sales"),
       };
 
+      const info = L.control({position: "topleft"});
+      info.onAdd = function (map) {
+        this._div = L.DomUtil.create("div", "info");
+        return this._div;
+      };
+      info.update = function() {
+        this._div.innerHTML = state.key == null ? "<h4>Details for<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.key}</h4>`;
+        const data = state.key == null ? state.summaryData : state.choroplethData[state.key];
+        const items = [`<b>Year</b>: ${state.year}`];
+        for (const attribute in saleAttributes) {
+          const attributeProps = saleAttributes[attribute];
+          items.push(`<b>${attributeProps.getLabel()}</b>: ${attributeProps.display(data && data[state.year] ? data[state.year][attribute] : null)}`);
+        }
+        this._div.innerHTML += items.join("<br>");
+        if (state.key == null) {
+          this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
+        } else {
+          this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it.</p>"
+        }
+      };
+
       const legend = L.control({position: "bottomleft"});
       legend.onAdd = function (map) {
         this._div = L.DomUtil.create("div", "info legend");
@@ -209,6 +229,7 @@
         attribute: "mean",
         _attributeProps: saleAttributes["mean"],
         choroplethData: sales_by_nbhd,
+        summaryData: sales_totals,
         _limits: null,
         _colors: null,
         fillOpacity: 0.7,
@@ -220,7 +241,7 @@
         state.layer.setStyle(function(feature) {
           const val = getValue(feature.properties, state.choroplethData);
           let fillColor = null;
-          if (val !== null && val !== undefined && !isNaN(val)) {
+          if (val != null && !isNaN(val)) {
             for (let i = 0; i < state._limits.length-1; i++) {
               if (val <= state._limits[i+1]) {
                 fillColor = state._colors[i];
@@ -244,12 +265,19 @@
 
       // callbacks to be called when the corresponding prop in state is changed
       const stateCallbacks = {
-        year: updateChoropleth,
-        attribute: (val) => {
+        year: function(val) {
+          updateChoropleth();
+          info.update();
+        },
+        attribute: function(val) {
           state._attributeProps = saleAttributes[val];
           updateChoropleth();
+          info.update();
         },
-        fillOpacity: (val) => state.layer.setStyle( { fillOpacity: val } ),
+        key: function(val) {
+          info.update();
+        },
+        fillOpacity: function(val) { state.layer.setStyle( { fillOpacity: val } ); },
       }
 
       function updateState(prop, val) {
@@ -263,7 +291,7 @@
       function highlightFeature(e) {
         e.target.setStyle({
           weight: 5,
-          color: '#666',
+          color: '#333',
         }).bringToFront();
       }
 
@@ -303,6 +331,7 @@
         ).addTo(map);
       
       legend.addTo(map);
+      info.addTo(map);
 
       L.control.timelineSlider({
         timelineItems: ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"],
