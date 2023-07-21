@@ -40,6 +40,14 @@
     .leaflet-control {
       background: rgba(255,255,255,0.8);
     }
+    a, a.external {
+      color: #36c;
+    }
+    a.external::after {
+      /* Source: Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Link-external-small-ltr-progressive.svg (CC BY 4.0) */
+      content: url(https://upload.wikimedia.org/wikipedia/commons/9/96/Link-external-small-ltr-progressive.svg);
+      margin: 0px 0px 0px 5px;
+    }
     .info {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
@@ -199,6 +207,13 @@
           items.push(`<b>${attributeProps.getLabel()}</b>: ${attributeProps.display(data && data[state.year] ? data[state.year][attribute] : null)}`);
         }
         this._div.innerHTML += items.join("<br>");
+        // Add link to source data
+        let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '2') AND year=${state.year}`;
+        if (state.key != null) {
+          query += ` AND nbhd_code='${state.key}'`;
+        }
+        query += "&$limit=1000000000";
+        this._div.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
         if (state.key == null) {
           this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
         } else {
