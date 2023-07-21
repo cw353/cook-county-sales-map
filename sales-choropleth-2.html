@@ -199,7 +199,9 @@
         return this._div;
       };
       info.update = function() {
-        this._div.innerHTML = state.key == null ? "<h4>Details for<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.key}</h4>`;
+        // Add header
+        this._div.innerHTML = state.key == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.key}</h4>`;
+        // Add data items
         const data = state.key == null ? state.summaryData : state.choroplethData[state.key];
         const items = [`<b>Year</b>: ${state.year}`];
         for (const attribute in saleAttributes) {
@@ -214,6 +216,7 @@
         }
         query += "&$limit=1000000000";
         this._div.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
+        // Add info about how to toggle view between summary of all areas and details of specific area
         if (state.key == null) {
           this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
         } else {
