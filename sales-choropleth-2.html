@@ -96,8 +96,9 @@
       font-style: italic;
       cursor: pointer;
     }
-    .data-select {
-      line-height: 2em;
+    .data-select-div {
+      margin-top: 10px;
+      margin-bottom: 5px;
     }
   </style>
 
@@ -246,6 +247,7 @@
             updateState("attribute", e.target.value);
           });
         $(this._div).append([
+          "<h4>Select Data to Display</h4>",
           $("<div class='data-select-div'></div>").append([
             `<label for="select-attr">Select Property Class:</label>`,
             selectClass,
