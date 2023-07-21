@@ -48,6 +48,9 @@
       content: url(https://upload.wikimedia.org/wikipedia/commons/9/96/Link-external-small-ltr-progressive.svg);
       margin: 0px 0px 0px 5px;
     }
+    label {
+      margin-right: 5px;
+    }
     .info {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
@@ -92,6 +95,9 @@
     .show-all-link {
       font-style: italic;
       cursor: pointer;
+    }
+    .data-select {
+      line-height: 2em;
     }
   </style>
 
@@ -194,7 +200,7 @@
       };
 
       const info = L.control({position: "topleft"});
-      info.onAdd = function (map) {
+      info.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "info");
         return this._div;
       };
@@ -224,8 +230,36 @@
         }
       };
 
+      const dataSelectControl = L.control({position: "topright"});
+      dataSelectControl.onAdd = function(map) {
+        this._div = L.DomUtil.create("div", "info data-select");
+        // prevent clicks from propagating to map below
+        L.DomEvent.on(this._div, "click", function(e) { L.DomEvent.stopPropagation(e); });
+        // TODO: add ability to select different property classes using event handler on this._selectClass?
+        const selectClass = $("<select id='select-class'></select>")
+          .html("<option value='class2'>Major Class 2 (Residential, Non-Multi-Family)</option>");
+        const selectAttribute = $("<select id='select-attr'></select>")
+          .html(Object.entries(saleAttributes).map(function([attribute, attributeProps]) {
+            return `<option value="${attribute}">${attributeProps.getLabel()}</option>`;
+          }))
+          .on("change", function(e) {
+            updateState("attribute", e.target.value);
+          });
+        $(this._div).append([
+          $("<div class='data-select-div'></div>").append([
+            `<label for="select-attr">Select Property Class:</label>`,
+            selectClass,
+          ]),
+          $("<div data-select-div></div>").append([
+            `<label for="select-attr">Select Attribute:</label>`,
+            selectAttribute,
+          ]),
+        ]);
+        return this._div;
+      }
+
       const legend = L.control({position: "bottomleft"});
-      legend.onAdd = function (map) {
+      legend.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "info legend");
         return this._div;
       }
@@ -321,7 +355,7 @@
         neighborhoods,
         {
           attribution: "<a href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
-          style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle)
+          style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle),
         }
       ).addTo(map);
       state.layer.eachLayer(function (sublayer) {
@@ -361,9 +395,11 @@
         }
       })
       .addTo(map);
+
+      dataSelectControl.addTo(map);
       
       // for testing only
-      //map.on("click", () => updateState("attribute", "count"));
+      map.on("click", () => updateState("attribute", "count"));
 
     </script>
 
