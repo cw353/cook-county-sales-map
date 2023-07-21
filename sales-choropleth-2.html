@@ -282,6 +282,7 @@
         _attributeProps: saleAttributes["mean"],
         choroplethData: sales_by_nbhd,
         summaryData: sales_totals,
+        years: sales_years,
         _limits: null,
         _colors: null,
         fillOpacity: 0.7,
@@ -387,7 +388,7 @@
 
       const timelineControl = L.control.timelineSlider({
         position: "bottomright",
-        timelineItems: ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"],
+        timelineItems: state.years,
         changeMap: function({label, index, map}) {
           updateState("year", label);
         }
