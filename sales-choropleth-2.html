@@ -319,7 +319,10 @@
       };
       state.layer = L.geoJSON(
         neighborhoods,
-        { style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle) }
+        {
+          attribution: "<a href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
+          style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle)
+        }
       ).addTo(map);
       state.layer.eachLayer(function (sublayer) {
         sublayer.on({
