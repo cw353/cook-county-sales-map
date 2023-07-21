@@ -103,6 +103,7 @@
         zoom: 9.5,
         zoomDelta: 0.5,
         zoomSnap: 0.5,
+        doubleClickZoom: false,
       });
 
       const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -259,16 +260,38 @@
         }
       }
 
+      function highlightFeature(e) {
+        e.target.setStyle({
+          weight: 5,
+          color: '#666',
+        }).bringToFront();
+      }
+
+      const defaultStyle = {
+        color: '#fff',
+        weight: 2,
+      };
       state.layer = L.geoJSON(
         neighborhoods,
-        {
-          style: {
-            color: '#fff',
-            weight: 2,
-            fillOpacity: state.fillOpacity,
-          }
-        }
+        { style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle) }
       ).addTo(map);
+      state.layer.eachLayer(function (sublayer) {
+        sublayer.on({
+          click: function(e) {
+            state.layer.setStyle(defaultStyle);
+            const key = sublayer.feature.properties.nbhd_code;
+            if (state.key !== key) {
+              // first click in a row selects this feature
+              updateState("key", key);
+              highlightFeature(e);
+            } else {
+              // second click in a row deselects this feature
+              updateState("key", null);
+            }
+            console.log(state.key);
+          },
+        });
+      });
 
       L.control.opacity(
           { "<div class='opacity-control-label'>Layer Opacity</div>" : state.layer },
@@ -290,7 +313,7 @@
       .addTo(map);
       
       // for testing only
-      map.on("click", () => updateState("attribute", "count"));
+      //map.on("click", () => updateState("attribute", "count"));
 
     </script>
 
