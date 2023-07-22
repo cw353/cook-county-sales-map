@@ -30,7 +30,7 @@
 
   <style type="text/css">
     #map {
-      height: 600px;
+      height: 625px;
       max-width: 100%;
     }
     a.external::after {
@@ -71,6 +71,7 @@
     }
     .info p {
       text-align: center;
+      margin-bottom: 3px;
     }
     .legend {
       line-height: 18px;
@@ -197,10 +198,14 @@
         return [limits, colors];
       }
 
+      const propertyClasses = {
+        2: { name: "Major Class 2", desc: "Residential, Non-Multi-Family" },
+      };
+
       const saleAttributes = {
-        "mean": new USDFeature("Average Sale Price"),
-        "median": new USDFeature("Median Sale Price"),
-        "count": new CountFeature("Number of Sales"),
+        mean: new USDFeature("Average Sale Price"),
+        median: new USDFeature("Median Sale Price"),
+        count: new CountFeature("Number of Sales"),
       };
 
       const info = L.control({position: "topleft"});
@@ -215,7 +220,7 @@
         this._div.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
         // Add data items
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
-        const items = [`<b>Year</b>: ${state.year}`];
+        const items = [`<b>Year</b>: ${state.year}`, `<b>Property Class</b>: ${state._propertyClassProps.name}`];
         for (const attribute in saleAttributes) {
           const attributeProps = saleAttributes[attribute];
           items.push(`<b>${attributeProps.getLabel()}</b>: ${attributeProps.display(data && data[state.year] ? data[state.year][attribute] : null)}`);
@@ -243,7 +248,9 @@
         L.DomEvent.disableScrollPropagation(this._div);
         // TODO: add ability to select different property classes using event handler on this._selectClass?
         const selectClass = $("<select id='select-class'></select>")
-          .html("<option value='class2'>Major Class 2 (Residential, Non-Multi-Family)</option>");
+          .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
+            return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
+          }));
         const selectAttribute = $("<select id='select-attr'></select>")
           .html(Object.entries(saleAttributes).map(function([attribute, attributeProps]) {
             return `<option value="${attribute}">${attributeProps.getLabel()}</option>`;
@@ -323,6 +330,8 @@
       const state = {
         layer: null,
         year: null,
+        propertyClass: 2,
+        _propertyClassProps: propertyClasses[2],
         featureKey: null,
         attribute: "mean",
         _attributeProps: saleAttributes["mean"],
