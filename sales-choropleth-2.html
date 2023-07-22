@@ -201,6 +201,8 @@
       const info = L.control({position: "topleft"});
       info.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control info");
+        L.DomEvent.disableClickPropagation(this._div);
+        L.DomEvent.disableScrollPropagation(this._div);
         return this._div;
       };
       info.update = function() {
@@ -232,8 +234,8 @@
       const dataSelectControl = L.control({position: "topright"});
       dataSelectControl.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control data-select");
-        // prevent clicks from propagating to map below
-        L.DomEvent.on(this._div, "click", function(e) { L.DomEvent.stopPropagation(e); });
+        L.DomEvent.disableClickPropagation(this._div);
+        L.DomEvent.disableScrollPropagation(this._div);
         // TODO: add ability to select different property classes using event handler on this._selectClass?
         const selectClass = $("<select id='select-class'></select>")
           .html("<option value='class2'>Major Class 2 (Residential, Non-Multi-Family)</option>");
@@ -261,6 +263,8 @@
       const legend = L.control({position: "bottomleft"});
       legend.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control legend");
+        L.DomEvent.disableClickPropagation(this._div);
+        L.DomEvent.disableScrollPropagation(this._div);
         return this._div;
       }
       legend.update = function(colors = null, labels = null, title = "Legend") {
