@@ -98,6 +98,11 @@
       margin-top: 10px;
       margin-bottom: 5px;
     }
+    .graph {
+      max-height: 350px;
+      max-width: 350px;
+      overflow: scroll;
+    }
   </style>
 
 </head>
@@ -278,6 +283,41 @@
         }
       };
 
+      const graphControl = L.control({position: "topright"});
+      graphControl.onAdd = function (map) {
+        this._container = L.DomUtil.create("div", "custom-control graph");
+        this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
+        this._histDiv = L.DomUtil.create("div", "graph-subdiv");
+        this._container.appendChild(this._scatterDiv);
+        this._container.appendChild(this._histDiv);
+        this._initPlots();
+        L.DomEvent.disableClickPropagation(this._container);
+        L.DomEvent.disableScrollPropagation(this._container);
+        return this._container;
+      };
+      graphControl._initPlots = function() {
+        const trace = {
+          x: [], y: state.years,
+          //hovertemplate: `Year: %{x}<br>${ylabel}: %{y${attributeProps.getD3Format()}}<extra></extra>`,
+          hoverlabel: { align: "left" },
+        };
+        const layout = {
+          width: 300, height: 250,
+          margin: { b: 35, l: 45, r: 0, t: 50 },
+          xaxis: { title: { text: "YEAR", font: { size: 11, } }, tickfont: { size: 10 }, dtick: 2, },
+          yaxis: { title: { font: { size: 11, } }, tickfont: { size: 10 } },
+          title: { font: { size: 13 }},
+        };
+        Plotly.newPlot(this._scatterDiv,
+          [trace],
+          layout
+        );
+        Plotly.newPlot(this._histDiv,
+          [trace],
+          layout
+        );
+      }
+
       const state = {
         layer: null,
         year: null,
@@ -405,6 +445,8 @@
       dataSelectControl.addTo(map); // topright
       timelineControl.addTo(map); // bottomright
       L.control.resizer({ direction: 'se' }).addTo(map);
+
+      graphControl.addTo(map);
 
     </script>
 
