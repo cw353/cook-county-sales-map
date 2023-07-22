@@ -5,42 +5,10 @@
   <title>Cook County Sales Choropleth Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
  
-  <!-- jQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
-  
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
-
-  <!-- leaflet-chloropleth and dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js" integrity="sha512-zInFF17qBFVvvvFpIfeBzo7Tj7+rQxLeTJDmbxjBz5/zIr89YVbTNelNhdTT+/DCrxoVzBeUPVFJsczKbB7sew==" crossorigin="anonymous"></script>
-  <script src="plugins/choropleth.js"></script>
-
-  <!-- other Leaflet plugins -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.css" integrity="sha512-ERJ24eirtxblVa8OFgLvEo5POXA4KjIH9dFD1RjXL0FbTr5PkpBYTnIMFGhhWdmGdXOUlxQhLu/S0BiPsbjAIA==" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.js" integrity="sha512-ETs9/6gyO86T5BWV+frzCctOVKzUa8CalhT+rCnm0AARnAAMX72vS6ifbFaeZr7BdxogolRqCS99XPbF2ltaqg==" crossorigin="anonymous"></script>  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-groupedlayercontrol@0.6.1/dist/leaflet.groupedlayercontrol.min.css" integrity="sha512-yP7tTm3rX87fOK3iDh9K2RJTHsq6BfGZ8sFqRMIfsmmZVakOw483WyOKlRWVLjHCHEDIcEkp/U+cO3TnZ8oiuw==" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.css" integrity="sha512-ov430Sdjmh6nk7i0pfdpzBiSi7KFhMC5oiO5eEB7YmzcmPCLJySjYdKu4DCRMVLsEGfP9eGx7NRyLgqykhuruA==" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.js" integrity="sha512-msnSqRmMNIELIn0wnF4k9rY12rzfwi4Ak0CWgx0xr4WPF5x/oUMNV+m+/2UWJSobC5zKqngmtBeuCtcUxkeSlQ==" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.24.3/dist/plotly-basic.min.js" integrity="sha512-Qim/xu0OSUPEvOUcNVZoGTDa+m4Ll1EZ+DQhsmMTlMZIj7NxvwQl6pGY0/gwlj19w0KEZ0S8ymSWUpqarPYGBQ==" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.css" integrity="sha512-89rME2doVsjKo1HDC+av4LHfqH2mFhXU5DUM71HT8/re8KxZe1EZf86+mDbhD3kIpaS0zVs0nKBZQIOIb/Xowg==" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.js" integrity="sha512-Yn7exzYqwK1hTlIWRvrCDS91kynaxb7/WR55buxeUdZp/DW9KHflTvkhxr3N0OcWoSaH/6ZBlV3PoVoghnho1A==" crossorigin="anonymous"></script>
-  <script src="plugins/leaflet-timeline-slider.min.js"></script>
-  <script src="plugins/L.Control.Opacity/L.Control.Opacity.js"></script>
-
-  <!-- data -->
-  <script src="data/sales.js"></script>
-  <script src="data/neighborhoods.js"></script>
-  
   <style type="text/css">
     #map {
       height: 600px;
-    }
-    .italic {
-      font-style: italic;
-    }
-    .leaflet-control {
-      background: rgba(255,255,255,0.8);
+      max-width: 100%;
     }
     a, a.external {
       color: #36c;
@@ -53,14 +21,26 @@
     label {
       margin-right: 5px;
     }
-    .info {
+    .italic {
+      font-style: italic;
+    }
+    .leaflet-control-attribution {
+      margin-right: 35px !important; /* override leaflet.css */
+    }
+    .leaflet-control-resizer {
+      background: rgba(224, 148, 49, 0.6) !important;
+    }
+    .custom-control, .leaflet-control-layers {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
-      background: rgba(255,255,255,0.8);
+    }
+    .custom-control, .leaflet-control-layers, .control_container {
+      background: rgba(255,255,255,0.8) !important; /* override leaflet.css */
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
       border-radius: 5px;
+      border: 2px solid rgba(0,0,0,0.2);
     }
-    .info h4, .opacity-control-label {
+    .custom-control h4, .opacity-control-label {
       margin: 0 0 5px;
       color: #777;
       text-align: center;
@@ -103,6 +83,33 @@
       margin-bottom: 5px;
     }
   </style>
+
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
+  
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
+
+  <!-- leaflet-chloropleth and dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js" integrity="sha512-zInFF17qBFVvvvFpIfeBzo7Tj7+rQxLeTJDmbxjBz5/zIr89YVbTNelNhdTT+/DCrxoVzBeUPVFJsczKbB7sew==" crossorigin="anonymous"></script>
+  <script src="plugins/choropleth.js"></script>
+
+  <!-- other Leaflet plugins -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.css" integrity="sha512-ERJ24eirtxblVa8OFgLvEo5POXA4KjIH9dFD1RjXL0FbTr5PkpBYTnIMFGhhWdmGdXOUlxQhLu/S0BiPsbjAIA==" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.control.layers.tree@1.1.0/L.Control.Layers.Tree.js" integrity="sha512-ETs9/6gyO86T5BWV+frzCctOVKzUa8CalhT+rCnm0AARnAAMX72vS6ifbFaeZr7BdxogolRqCS99XPbF2ltaqg==" crossorigin="anonymous"></script>  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-groupedlayercontrol@0.6.1/dist/leaflet.groupedlayercontrol.min.css" integrity="sha512-yP7tTm3rX87fOK3iDh9K2RJTHsq6BfGZ8sFqRMIfsmmZVakOw483WyOKlRWVLjHCHEDIcEkp/U+cO3TnZ8oiuw==" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.css" integrity="sha512-ov430Sdjmh6nk7i0pfdpzBiSi7KFhMC5oiO5eEB7YmzcmPCLJySjYdKu4DCRMVLsEGfP9eGx7NRyLgqykhuruA==" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.js" integrity="sha512-msnSqRmMNIELIn0wnF4k9rY12rzfwi4Ak0CWgx0xr4WPF5x/oUMNV+m+/2UWJSobC5zKqngmtBeuCtcUxkeSlQ==" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js@2.24.3/dist/plotly-basic.min.js" integrity="sha512-Qim/xu0OSUPEvOUcNVZoGTDa+m4Ll1EZ+DQhsmMTlMZIj7NxvwQl6pGY0/gwlj19w0KEZ0S8ymSWUpqarPYGBQ==" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.css" integrity="sha512-89rME2doVsjKo1HDC+av4LHfqH2mFhXU5DUM71HT8/re8KxZe1EZf86+mDbhD3kIpaS0zVs0nKBZQIOIb/Xowg==" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.js" integrity="sha512-Yn7exzYqwK1hTlIWRvrCDS91kynaxb7/WR55buxeUdZp/DW9KHflTvkhxr3N0OcWoSaH/6ZBlV3PoVoghnho1A==" crossorigin="anonymous"></script>
+  <script src="plugins/leaflet-timeline-slider.min.js"></script>
+  <script src="plugins/L.Control.Opacity/L.Control.Opacity.js"></script>
+
+  <!-- data -->
+  <script src="data/sales.js"></script>
+  <script src="data/neighborhoods.js"></script>
 
 </head>
 <body>
@@ -204,7 +211,7 @@
 
       const info = L.control({position: "topleft"});
       info.onAdd = function(map) {
-        this._div = L.DomUtil.create("div", "info");
+        this._div = L.DomUtil.create("div", "custom-control info");
         return this._div;
       };
       info.update = function() {
@@ -235,7 +242,7 @@
 
       const dataSelectControl = L.control({position: "topright"});
       dataSelectControl.onAdd = function(map) {
-        this._div = L.DomUtil.create("div", "info data-select");
+        this._div = L.DomUtil.create("div", "custom-control data-select");
         // prevent clicks from propagating to map below
         L.DomEvent.on(this._div, "click", function(e) { L.DomEvent.stopPropagation(e); });
         // TODO: add ability to select different property classes using event handler on this._selectClass?
@@ -264,7 +271,7 @@
 
       const legend = L.control({position: "bottomleft"});
       legend.onAdd = function(map) {
-        this._div = L.DomUtil.create("div", "info legend");
+        this._div = L.DomUtil.create("div", "custom-control legend");
         return this._div;
       }
       legend.update = function(colors = null, labels = null, title = "Legend") {
@@ -359,7 +366,7 @@
       state.layer = L.geoJSON(
         neighborhoods,
         {
-          attribution: "<a href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
+          attribution: "<a class='pad-right' href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
           style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle),
         }
       ).addTo(map);
