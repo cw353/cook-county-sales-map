@@ -175,8 +175,8 @@
       }
 
       function getValue(props, data) {
-        const key = props.nbhd_code;
-        const val = data[key] && data[key][state.year] ? data[key][state.year][state.attribute] : null;
+        const featureKey = props.nbhd_code;
+        const val = data[featureKey] && data[featureKey][state.year] ? data[featureKey][state.year][state.attribute] : null;
         return state._attributeProps.getValue ? state._attributeProps.getValue(val) : val;
       }
 
@@ -212,9 +212,9 @@
       };
       info.update = function() {
         // Add header
-        this._div.innerHTML = state.key == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.key}</h4>`;
+        this._div.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
         // Add data items
-        const data = state.key == null ? state.summaryData : state.choroplethData[state.key];
+        const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
         const items = [`<b>Year</b>: ${state.year}`];
         for (const attribute in saleAttributes) {
           const attributeProps = saleAttributes[attribute];
@@ -223,13 +223,13 @@
         this._div.innerHTML += items.join("<br>");
         // Add link to source data
         let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '2') AND year=${state.year}`;
-        if (state.key != null) {
-          query += ` AND nbhd_code='${state.key}'`;
+        if (state.featureKey != null) {
+          query += ` AND nbhd_code='${state.featureKey}'`;
         }
         query += "&$limit=1000000000";
         this._div.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
         // Add info about how to toggle view between summary of all areas and details of specific area
-        if (state.key == null) {
+        if (state.featureKey == null) {
           this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
         } else {
           this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it.</p>"
@@ -323,7 +323,7 @@
       const state = {
         layer: null,
         year: null,
-        key: null,
+        featureKey: null,
         attribute: "mean",
         _attributeProps: saleAttributes["mean"],
         choroplethData: sales_by_nbhd,
@@ -373,7 +373,7 @@
           updateChoropleth();
           info.update();
         },
-        key: function(val) {
+        featureKey: function(val) {
           info.update();
         },
         fillOpacity: function(val) { state.layer.setStyle( { fillOpacity: val } ); },
@@ -409,16 +409,15 @@
         sublayer.on({
           click: function(e) {
             state.layer.setStyle(defaultStyle);
-            const key = sublayer.feature.properties.nbhd_code;
-            if (state.key !== key) {
+            const featureKey = sublayer.feature.properties.nbhd_code;
+            if (state.featureKey !== featureKey) {
               // first click in a row selects this feature
-              updateState("key", key);
+              updateState("featureKey", featureKey);
               highlightFeature(e);
             } else {
               // second click in a row deselects this feature
-              updateState("key", null);
+              updateState("featureKey", null);
             }
-            console.log(state.key);
           },
         });
       });
