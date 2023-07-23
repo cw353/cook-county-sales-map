@@ -293,6 +293,7 @@
       const graphControl = L.control({position: "topright"});
       graphControl.onAdd = function (map) {
         this._container = L.DomUtil.create("div", "custom-control graph");
+        this._container.innerHTML = "<h4>Visualizations</h4>";
         this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
         this._histDiv = L.DomUtil.create("div", "graph-subdiv");
         this._container.appendChild(this._scatterDiv);
@@ -305,7 +306,6 @@
       graphControl._initPlots = function() {
         const trace = {
           x: [], y: state.years,
-          //hovertemplate: `Year: %{x}<br>${ylabel}: %{y${attributeProps.getD3Format()}}<extra></extra>`,
           hoverlabel: { align: "left" },
         };
         const layout = {
@@ -321,10 +321,26 @@
           [trace],
           layout
         );
-        Plotly.newPlot(this._histDiv,
-          [trace],
-          layout
-        );
+      }
+      graphControl._updatePlot = function(div, data_props, layout_props) {
+        Plotly.update(this._scatterDiv, data_props, layout_props);
+      }
+      graphControl.updateScatter = function() {
+        const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
+        const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
+        const y = state.years.map(function(year) {
+          return data && data[year] ? data[year][state.attribute] : null;
+        });
+        const ylabel = state._attributeProps.getLabel();
+        const data_props = {
+          x: [state.years], y: [y],
+          hovertemplate: `Year: %{x}<br>${ylabel}: %{y${state._attributeProps.getD3Format()}}<extra></extra>`,
+        };
+        const layout_props = {
+          'yaxis.title.text': ylabel.toUpperCase(),
+          'title.text': `Trends in ${ylabel}<br>for ${scope}`,
+          };
+          graphControl._updatePlot(this._scatterDiv, data_props, layout_props);
       }
 
       const state = {
@@ -381,9 +397,11 @@
           state._attributeProps = saleAttributes[val];
           updateChoropleth();
           info.update();
+          graphControl.updateScatter();
         },
         featureKey: function(val) {
           info.update();
+          graphControl.updateScatter();
         },
         fillOpacity: function(val) { state.layer.setStyle( { fillOpacity: val } ); },
       }
@@ -456,6 +474,8 @@
       graphControl.addTo(map); // topright
       timelineControl.addTo(map); // bottomright
       L.control.resizer({ direction: 'se' }).addTo(map); // bottomright
+
+      graphControl.updateScatter();
 
     </script>
 
