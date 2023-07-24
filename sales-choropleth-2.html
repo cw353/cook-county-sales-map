@@ -66,7 +66,7 @@
     }
     .custom-control h4, .opacity-control-label {
       margin: 0 0 5px;
-      color: #777;
+      color: #555;
       text-align: center;
     }
     .opacity-control-label {
@@ -326,7 +326,7 @@
           margin: { b: 35, l: 50, r: 35, t: 35 },
           xaxis: { title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, },
           yaxis: { title: { font: { size: 11, } }, tickfont: { size: 10 } },
-          title: { font: { size: 12 } },
+          title: { font: { family: "Arial", size: 13, color: "#555" } },
           paper_bgcolor: 'rgba(255,255,255,0.8)',
           plot_bgcolor: 'rgba(255,255,255,0)',
           modebar: { orientation: 'v', remove: ["select2d", "lasso2d", ]},
@@ -358,7 +358,7 @@
         };
         const layout_props = {
           'yaxis.title.text': ylabel.toUpperCase(),
-          'title.text': `Sales of Major Class ${state.propertyClass} Properties for<br> ${scope}`,
+          'title.text': `<b>Sales of Major Class ${state.propertyClass} Properties for<br> ${scope}</b>`,
         };
         this._updatePlot(this._scatterDiv, data_props, layout_props);
       }
