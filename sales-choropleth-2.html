@@ -220,7 +220,10 @@
         this._div.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
         // Add data items
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
-        const items = [`<b>Year</b>: ${state.year}`, `<b>Property Class</b>: ${state._propertyClassProps.name}`];
+        const items = [
+          `<b>Year</b>: ${state.year}`,
+          `<b>Property Class</b>: <a class='external' href='https://www.cookcountyassessor.com/form-document/codes-classification-property'>${state._propertyClassProps.name}</a>`
+        ];
         for (const stat in saleStats) {
           const statProps = saleStats[stat];
           items.push(`<b>${statProps.getLabel()}</b>: ${statProps.display(data && data[state.year] ? data[state.year][stat] : null)}`);
