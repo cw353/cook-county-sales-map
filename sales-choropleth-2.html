@@ -110,6 +110,9 @@
       max-height: 100px;
       overflow-y: scroll;
     }
+    #map .modebar {
+      top: 30px;
+    }
   </style>
 
 </head>
@@ -301,7 +304,7 @@
         }
       };
 
-      const graphControl = L.control({position: "topright"});
+      const graphControl = L.control({position: "bottomright"});
       graphControl.onAdd = function (map) {
         this._container = L.DomUtil.create("div", "custom-control graph");
         this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
@@ -317,17 +320,24 @@
           hoverlabel: { align: "left" },
         };
         const layout = {
-          width: 250, height: 200,
-          margin: { b: 35, l: 50, r: 0, t: 35 },
-          xaxis: { title: { text: "YEAR", font: { size: 11, } }, tickfont: { size: 10 }, dtick: 2, },
+          width: 300, height: 200,
+          margin: { b: 35, l: 50, r: 35, t: 35 },
+          xaxis: { title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, },
           yaxis: { title: { font: { size: 11, } }, tickfont: { size: 10 } },
-          title: { font: { size: 13 } },
-          paper_bgcolor: 'rgba(255,255,255,0)',
+          title: { font: { size: 12 } },
+          paper_bgcolor: 'rgba(255,255,255,0.8)',
           plot_bgcolor: 'rgba(255,255,255,0)',
+          modebar: { orientation: 'v', remove: ["select2d", "lasso2d", ]},
         };
         Plotly.newPlot(this._scatterDiv,
           [trace],
-          layout
+          layout,
+          {
+            scrollZoom: true,
+            displayModeBar: true,
+            displaylogo: false,
+            toImageButtonOptions: { filename: 'cook_county_sales_scatterplot' }
+          }
         );
       }
       graphControl._updatePlot = function(div, data_props, layout_props) {
@@ -346,7 +356,7 @@
         };
         const layout_props = {
           'yaxis.title.text': ylabel.toUpperCase(),
-          'title.text': scope,
+          'title.text': `Sales of Major Class ${state.propertyClass} Properties for<br> ${scope}`,
         };
         this._updatePlot(this._scatterDiv, data_props, layout_props);
       }
@@ -480,6 +490,7 @@
         showUniqueResult: false,
         defaultMarkGeocode: false,
         position: "topright",
+        collapsed: false,
       }).on("markgeocode", function(e) {
         if (e.geocode && e.geocode.center) {
           map.setView(e.geocode.center, map.getMaxZoom());
@@ -494,9 +505,9 @@
       info.addTo(map); // topleft
       dataSelectControl.addTo(map); // topright
       geocoderControl.addTo(map); // topright
-      graphControl.addTo(map); // topright
       timelineControl.addTo(map); // bottomright
       opacityControl.addTo(map); // bottomright
+      graphControl.addTo(map); // bottomright
       L.control.resizer({ direction: 'se' }).addTo(map); // bottomright
 
       L.DomEvent.disableClickPropagation(geocoderControl._container);
