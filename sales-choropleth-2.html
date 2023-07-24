@@ -177,8 +177,8 @@
 
       function getValue(props, data) {
         const featureKey = props.nbhd_code;
-        const val = data[featureKey] && data[featureKey][state.year] ? data[featureKey][state.year][state.attribute] : null;
-        return state._attributeProps.getValue ? state._attributeProps.getValue(val) : val;
+        const val = data[featureKey] && data[featureKey][state.year] ? data[featureKey][state.year][state.stat] : null;
+        return state._statProps.getValue ? state._statProps.getValue(val) : val;
       }
 
       // Get colors and limits for a choropleth map
@@ -202,7 +202,7 @@
         2: { name: "Major Class 2", desc: "Residential, Non-Multi-Family" },
       };
 
-      const saleAttributes = {
+      const saleStats = {
         mean: new USDFeature("Average Sale Price"),
         median: new USDFeature("Median Sale Price"),
         count: new CountFeature("Number of Sales"),
@@ -221,9 +221,9 @@
         // Add data items
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
         const items = [`<b>Year</b>: ${state.year}`, `<b>Property Class</b>: ${state._propertyClassProps.name}`];
-        for (const attribute in saleAttributes) {
-          const attributeProps = saleAttributes[attribute];
-          items.push(`<b>${attributeProps.getLabel()}</b>: ${attributeProps.display(data && data[state.year] ? data[state.year][attribute] : null)}`);
+        for (const stat in saleStats) {
+          const statProps = saleStats[stat];
+          items.push(`<b>${statProps.getLabel()}</b>: ${statProps.display(data && data[state.year] ? data[state.year][stat] : null)}`);
         }
         this._div.innerHTML += items.join("<br>");
         // Add link to source data
@@ -251,12 +251,12 @@
           .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
             return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
           }));
-        const selectAttribute = $("<select id='select-attr'></select>")
-          .html(Object.entries(saleAttributes).map(function([attribute, attributeProps]) {
-            return `<option value="${attribute}">${attributeProps.getLabel()}</option>`;
+        const selectStat = $("<select id='select-attr'></select>")
+          .html(Object.entries(saleStats).map(function([stat, statProps]) {
+            return `<option value="${stat}">${statProps.getLabel()}</option>`;
           }))
           .on("change", function(e) {
-            updateState("attribute", e.target.value);
+            updateState("stat", e.target.value);
           });
         $(this._div).append([
           "<h4>Select Data to Display</h4>",
@@ -265,8 +265,8 @@
             selectClass,
           ]),
           $("<div data-select-div></div>").append([
-            `<label for="select-attr">Select Attribute:</label>`,
-            selectAttribute,
+            `<label for="select-attr">Select Statistic:</label>`,
+            selectStat,
           ]),
         ]);
         return this._div;
@@ -329,12 +329,12 @@
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
         const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
         const y = state.years.map(function(year) {
-          return data && data[year] ? data[year][state.attribute] : null;
+          return data && data[year] ? data[year][state.stat] : null;
         });
-        const ylabel = state._attributeProps.getLabel();
+        const ylabel = state._statProps.getLabel();
         const data_props = {
           x: [state.years], y: [y],
-          hovertemplate: `Year: %{x}<br>${ylabel}: %{y${state._attributeProps.getD3Format()}}<extra></extra>`,
+          hovertemplate: `Year: %{x}<br>${ylabel}: %{y${state._statProps.getD3Format()}}<extra></extra>`,
         };
         const layout_props = {
           'yaxis.title.text': ylabel.toUpperCase(),
@@ -349,8 +349,8 @@
         propertyClass: 2,
         _propertyClassProps: propertyClasses[2],
         featureKey: null,
-        attribute: "mean",
-        _attributeProps: saleAttributes["mean"],
+        stat: "mean",
+        _statProps: saleStats["mean"],
         choroplethData: sales_by_nbhd,
         summaryData: sales_totals,
         years: sales_years,
@@ -381,10 +381,10 @@
         for (let i = 0; i < state._colors.length; i++) {
           const lower_limit = i === 0 ? Math.trunc(state._limits[i]) : Math.trunc(state._limits[i]+1);
           const upper_limit = Math.trunc(state._limits[i+1]);
-          const label = state._attributeProps.display(lower_limit) + " &ndash; " + state._attributeProps.display(upper_limit);
+          const label = state._statProps.display(lower_limit) + " &ndash; " + state._statProps.display(upper_limit);
           labels.push(label);
         }
-        legend.update([null].concat(state._colors), labels, state._attributeProps.getLabel());
+        legend.update([null].concat(state._colors), labels, state._statProps.getLabel());
       }
 
       // callbacks to be called when the corresponding prop in state is changed
@@ -393,8 +393,8 @@
           updateChoropleth();
           info.update();
         },
-        attribute: function(val) {
-          state._attributeProps = saleAttributes[val];
+        stat: function(val) {
+          state._statProps = saleStats[val];
           updateChoropleth();
           info.update();
           graphControl.updateScatter();
