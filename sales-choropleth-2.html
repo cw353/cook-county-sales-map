@@ -71,6 +71,8 @@
     }
     .info p {
       text-align: center;
+    }
+    .info p:last-of-type {
       margin-bottom: 3px;
     }
     .legend {
@@ -220,6 +222,12 @@
       info.update = function() {
         // Add header
         this._div.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
+        // Add info about how to toggle view between summary of all areas and details of specific area
+        if (state.featureKey == null) {
+          this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
+        } else {
+          this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it.</p>"
+        }
         // Add data items
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
         const items = [
@@ -238,12 +246,6 @@
         }
         query += "&$limit=1000000000";
         this._div.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
-        // Add info about how to toggle view between summary of all areas and details of specific area
-        if (state.featureKey == null) {
-          this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
-        } else {
-          this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it.</p>"
-        }
       };
 
       const dataSelectControl = L.control({position: "topright"});
@@ -457,7 +459,7 @@
       const opacityControl = L.control.opacity(
         { "<div class='opacity-control-label'>Layer Opacity</div>" : state.layer },
         {
-          position: "bottomleft",
+          position: "bottomright",
           initialOpacity: state.fillOpacity,
           updateOpacity: (layer, opacity) => updateState("fillOpacity", opacity),
         },
@@ -472,12 +474,12 @@
       });
       
       // add controls in order, proceeding clockwise from bottom left to bottom right
-      opacityControl.addTo(map); // bottomleft
       legend.addTo(map); // bottomleft
       info.addTo(map); // topleft
       dataSelectControl.addTo(map); // topright
       graphControl.addTo(map); // topright
       timelineControl.addTo(map); // bottomright
+      opacityControl.addTo(map); // bottomright
       L.control.resizer({ direction: 'se' }).addTo(map); // bottomright
 
       graphControl.updateScatter();
