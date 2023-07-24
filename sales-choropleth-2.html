@@ -200,6 +200,8 @@
 
       const propertyClasses = {
         2: { name: "Major Class 2", desc: "Residential, Non-Multi-Family" },
+        3: { name: "Major Class 3", desc: "Residential, Multi-Family" },
+        9: { name: "Major Class 9", desc: "Multi-Family Residential Real Estate Incentive" },
       };
 
       const saleAttributes = {
@@ -227,7 +229,7 @@
         }
         this._div.innerHTML += items.join("<br>");
         // Add link to source data
-        let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '2') AND year=${state.year}`;
+        let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '${state.propertyClass}') AND year=${state.year}`;
         if (state.featureKey != null) {
           query += ` AND nbhd_code='${state.featureKey}'`;
         }
@@ -250,7 +252,10 @@
         const selectClass = $("<select id='select-class'></select>")
           .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
             return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
-          }));
+          }))
+          .on("change", function(e) {
+            updateState("propertyClass", e.target.value);
+          });
         const selectAttribute = $("<select id='select-attr'></select>")
           .html(Object.entries(saleAttributes).map(function([attribute, attributeProps]) {
             return `<option value="${attribute}">${attributeProps.getLabel()}</option>`;
@@ -338,7 +343,7 @@
         };
         const layout_props = {
           'yaxis.title.text': ylabel.toUpperCase(),
-          'title.text': `Trends in ${ylabel}<br>for ${scope}`,
+          'title.text': `${ylabel} (Major Class ${state.propertyClass})<br>for ${scope}`,
           };
           graphControl._updatePlot(this._scatterDiv, data_props, layout_props);
       }
@@ -351,8 +356,8 @@
         featureKey: null,
         attribute: "mean",
         _attributeProps: saleAttributes["mean"],
-        choroplethData: sales_by_nbhd,
-        summaryData: sales_totals,
+        choroplethData: sales_by_nbhd[2],
+        summaryData: sales_totals[2],
         years: sales_years,
         _limits: null,
         _colors: null,
@@ -389,21 +394,29 @@
 
       // callbacks to be called when the corresponding prop in state is changed
       const stateCallbacks = {
-        year: function(val) {
-          updateChoropleth();
-          info.update();
-        },
-        attribute: function(val) {
-          state._attributeProps = saleAttributes[val];
+        propertyClass: function() {
+          state._propertyClassProps = propertyClasses[state.propertyClass];
+          state.summaryData = sales_totals[state.propertyClass];
+          state.choroplethData = sales_by_nbhd[state.propertyClass];
           updateChoropleth();
           info.update();
           graphControl.updateScatter();
         },
-        featureKey: function(val) {
+        year: function() {
+          updateChoropleth();
+          info.update();
+        },
+        attribute: function() {
+          state._attributeProps = saleAttributes[state.attribute];
+          updateChoropleth();
           info.update();
           graphControl.updateScatter();
         },
-        fillOpacity: function(val) { state.layer.setStyle( { fillOpacity: val } ); },
+        featureKey: function() {
+          info.update();
+          graphControl.updateScatter();
+        },
+        fillOpacity: function() { state.layer.setStyle( { fillOpacity: state.fillOpacity } ); },
       }
 
       function updateState(prop, val) {
