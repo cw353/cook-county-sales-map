@@ -23,6 +23,8 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet.control.resizer@0.0.1/L.Control.Resizer.js" integrity="sha512-Yn7exzYqwK1hTlIWRvrCDS91kynaxb7/WR55buxeUdZp/DW9KHflTvkhxr3N0OcWoSaH/6ZBlV3PoVoghnho1A==" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" integrity="sha512-+uXbfI7GqghCnQUzxdA4P2cOwH00xc9s5gN551DUHWugGG1kOITswJniBDX4fQecqtWSoDUoJ4s1igb53PGENQ==" crossorigin="anonymous">
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js" integrity="sha512-qh/P3G5pJ41NomJU64K7iqtrGpjd1odJapzykgv3Ch5pHc0ecjZahh4huIsmvTPXDRwvI86mqh2AbbLwZRS8Cw==" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.css" integrity="sha512-ov430Sdjmh6nk7i0pfdpzBiSi7KFhMC5oiO5eEB7YmzcmPCLJySjYdKu4DCRMVLsEGfP9eGx7NRyLgqykhuruA==" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.defaultextent@0.0.3/dist/leaflet.defaultextent.js" integrity="sha512-msnSqRmMNIELIn0wnF4k9rY12rzfwi4Ak0CWgx0xr4WPF5x/oUMNV+m+/2UWJSobC5zKqngmtBeuCtcUxkeSlQ==" crossorigin="anonymous"></script>
   <script src="plugins/timeline-slider/leaflet-timeline-slider.min.js"></script>
   <script src="plugins/opacity/L.Control.Opacity.js"></script>
 
@@ -502,6 +504,7 @@
       
       // add controls in order, proceeding clockwise from bottom left to bottom right
       legend.addTo(map); // bottomleft
+      L.control.defaultExtent({position: "topleft"}).addTo(map); // topleft
       info.addTo(map); // topleft
       dataSelectControl.addTo(map); // topright
       geocoderControl.addTo(map); // topright
