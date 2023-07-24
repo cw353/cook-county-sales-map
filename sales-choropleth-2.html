@@ -300,11 +300,9 @@
       const graphControl = L.control({position: "topright"});
       graphControl.onAdd = function (map) {
         this._container = L.DomUtil.create("div", "custom-control graph");
-        this._container.innerHTML = "<h4>Visualizations</h4>";
+        //this._container.innerHTML = "<h4>Visualizations</h4>";
         this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
-        this._histDiv = L.DomUtil.create("div", "graph-subdiv");
         this._container.appendChild(this._scatterDiv);
-        this._container.appendChild(this._histDiv);
         this._initPlots();
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
