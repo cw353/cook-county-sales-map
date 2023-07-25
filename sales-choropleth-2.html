@@ -312,6 +312,7 @@
         this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
         this._container.appendChild(this._scatterDiv);
         this._initPlot();
+        this.updateScatter();
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
         return this._container;
@@ -503,6 +504,7 @@
       });
       
       // add controls in order, proceeding clockwise from bottom left to bottom right
+      // note that adding timelineSlider updates state.year and thus initializes the rest of the map
       legend.addTo(map); // bottomleft
       L.control.defaultExtent({position: "topleft"}).addTo(map); // topleft
       info.addTo(map); // topleft
@@ -515,8 +517,6 @@
 
       L.DomEvent.disableClickPropagation(geocoderControl._container);
       L.DomEvent.disableScrollPropagation(geocoderControl._container);
-
-      graphControl.updateScatter();
 
     </script>
 
