@@ -128,7 +128,11 @@
         zoom: 9.5,
         zoomDelta: 0.5,
         zoomSnap: 0.5,
+        attributionControl: false,
       });
+      L.control.attribution({position: "bottomright"})
+        .addAttribution("&copy; <a href='https://github.com/cw353/'>Claire Wagner</a>")
+        .addTo(map);
 
       const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
