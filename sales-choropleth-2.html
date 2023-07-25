@@ -376,7 +376,7 @@
         years: sales_years,
         _limits: null,
         _colors: null,
-        fillOpacity: 0.7,
+        opacity: 0.7,
       };
       const updateChoropleth = function() {
         // TODO: add caching for limits and colors?
@@ -423,7 +423,7 @@
           info.update();
           graphControl.updateScatter();
         },
-        fillOpacity: function(val) { state.layer.setStyle( { fillOpacity: val } ); },
+        opacity: function(val) { state.layer.setStyle( { opacity: val, fillOpacity: val } ); },
       }
 
       function updateState(prop, val) {
@@ -449,7 +449,7 @@
         neighborhoods,
         {
           attribution: "<a class='pad-right' href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
-          style: Object.assign({fillOpacity: state.fillOpacity}, defaultStyle),
+          style: Object.assign({opacity: state.opacity, fillOpacity: state.opacity}, defaultStyle),
         }
       ).addTo(map);
       state.layer.eachLayer(function (sublayer) {
@@ -473,8 +473,8 @@
         { "<div class='opacity-control-label'>Layer Opacity</div>" : state.layer },
         {
           position: "bottomright",
-          initialOpacity: state.fillOpacity,
-          updateOpacity: (layer, opacity) => updateState("fillOpacity", opacity),
+          initialOpacity: state.opacity,
+          updateOpacity: (layer, opacity) => updateState("opacity", opacity),
         },
       );
 
