@@ -249,7 +249,7 @@
         }
         this._div.innerHTML += items.join("<br>");
         // Add link to source data
-        let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '2') AND year=${state.year}`;
+        let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '${state.propertyClass}') AND year=${state.year}`;
         if (state.featureKey != null) {
           query += ` AND nbhd_code='${state.featureKey}'`;
         }
