@@ -255,7 +255,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         if (state.featureKey == null) {
           this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
         } else {
-          this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it.</p>"
+          this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
         }
         // Add data items
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
@@ -481,6 +481,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       state.layer.eachLayer(function (sublayer) {
         sublayer.on({
           click: function(e) {
+            // stop event propagation
+            // (so that clicks on this layer will not be handled by the same event handler as clicks elsewhere on the map)
+            L.DomEvent.stopPropagation(e);
             state.layer.setStyle(defaultStyle);
             const featureKey = sublayer.feature.properties.nbhd_code;
             if (state.featureKey !== featureKey) {
@@ -493,6 +496,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
           },
         });
+      });
+
+      // if a feature has been selected, clicking on the map outside of the layer deselects it
+      map.on("click", function() {
+        if (state.featureKey != null) {
+          state.layer.setStyle(defaultStyle);
+          updateState("featureKey", null);
+        }
       });
 
       const opacityControl = L.control.opacity(
