@@ -127,6 +127,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     .graph {
       max-width: 350px;
     }
+    .data-select select {
+      max-width: 200px;
+    }
     #map .leaflet-control-geocoder-alternatives {
       max-height: 115px;
       overflow-y: scroll;
@@ -214,6 +217,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       /* Portions of this function are based on https://github.com/timwis/leaflet-choropleth (MIT License) */
       function getChoroplethProps(layer, data, getValue, options = null) {
         // overwrite default options with provided options (if any)
+        // note: opts.steps is the number of intervals that the function will aim to create,
+        // but depending on the range of the data, a smaller number of intervals may be returned
         const opts = Object.assign({
           mode: 'q', steps: 10, scale: 'viridis'
         }, options);
@@ -221,15 +226,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         layer.eachLayer(function(sublayer) {
           values.push(getValue(sublayer.feature.properties, data));
         });
-        const limits = chroma.limits(values, opts.mode, opts.steps);
-        const colors = opts.colors && opts.colors.length === limits.length
-          ? opts.colors
-          : chroma.scale(opts.scale).colors(limits.length-1);
+        // get opts.steps limits and opts.steps-1 colors from chroma
+        const chromaLimits = chroma.limits(values, opts.mode, opts.steps);
+        const chromaColors = chroma.scale(opts.scale).colors(chromaLimits.length-1);
+        // keep only non-duplicated limits (and their corresponding colors)
+        // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+        const limits = [chromaLimits[0]];
+        const colors = [];
+        for (let i = 0; i < chromaLimits.length-1; i++) {
+          if (Math.trunc(chromaLimits[i+1]) !== Math.trunc(limits[limits.length-1])) {
+            limits.push(chromaLimits[i+1]);
+            colors.push(chromaColors[i]);
+          }
+        }
+        console.log(chromaLimits);
+        console.log(limits);
         return [limits, colors];
       }
 
       const propertyClasses = {
-        2: { name: "Major Class 2", desc: "Residential, Non-Multi-Family" },
+        2: { name: "Major Class 2", desc: "Residential" },
+        3: { name: "Major Class 3", desc: "Multi-Family" },
+        9: { name: "Major Class 9", desc: "Class 3 Multi-Family Residential Real Estate Incentive" },
       };
 
       const saleStats = {
@@ -285,7 +303,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         const selectClass = $("<select id='select-class'></select>")
           .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
             return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
-          }));
+          }))
+          .on("change", function(e) {
+            updateState("propertyClass", e.target.value);
+          });;
         const selectStat = $("<select id='select-attr'></select>")
           .html(Object.entries(saleStats).map(function([stat, statProps]) {
             return `<option value="${stat}">${statProps.getLabel()}</option>`;
@@ -344,8 +365,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         };
         const layout = {
           width: 275, height: 225,
-          margin: { b: 35, l: 50, r: 35, t: 35 },
-          xaxis: { title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, },
+          margin: { b: 35, l: 50, r: 35, t: 45 },
+          xaxis: { title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, range: [state.years[0]-0.75, state.years[state.years.length-1]+0.75] },
           yaxis: { title: { font: { size: 11, } }, tickfont: { size: 10 } },
           title: { font: { family: "Arial", size: 13, color: "#555" } },
           paper_bgcolor: 'rgba(255,255,255,0.8)',
@@ -369,31 +390,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       graphControl.updateScatter = function() {
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
         const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
-        const y = state.years.map(function(year) {
-          return data && data[year] ? data[year][state.stat] : null;
-        });
+        const x = [];
+        const y = [];
+        // plot only non-null data points
+        for (const year of state.years) {
+          if (data && data[year]) {
+            x.push(year);
+            y.push(data[year][state.stat]);
+          }
+        }
         const ylabel = state._statProps.getLabel();
         const data_props = {
-          x: [state.years], y: [y],
+          x: [x], y: [y],
           hovertemplate: `Year: %{x}<br>${ylabel}: %{y${state._statProps.getD3Format()}}<extra></extra>`,
         };
         const layout_props = {
           'yaxis.title.text': ylabel.toUpperCase(),
           'title.text': `<b>Sales of Major Class ${state.propertyClass} Properties for<br> ${scope}</b>`,
         };
+        // turn off y-axis automargin when there is only one point to plot
+        // to avoid overly precise range (which would cause display problems)
+        if (y.length === 1) {
+          layout_props['yaxis.range'] = [y[0]/2, y[0]*2];
+        } else {
+          layout_props['yaxis.autorange'] = true;
+        }
         this._updatePlot(this._scatterDiv, data_props, layout_props);
       }
 
+      const initialPropertyClass = "2";
+      const initialStat = "mean";
       const state = {
         layer: null,
         year: null,
         propertyClass: 2,
-        _propertyClassProps: propertyClasses[2],
+        _propertyClassProps: propertyClasses[initialPropertyClass],
         featureKey: null,
-        stat: "mean",
-        _statProps: saleStats["mean"],
-        choroplethData: sales_by_nbhd,
-        summaryData: sales_totals,
+        stat: initialStat,
+        _statProps: saleStats[initialStat],
+        choroplethData: sales_by_nbhd[initialPropertyClass],
+        summaryData: sales_totals[initialPropertyClass],
         years: sales_years,
         _limits: null,
         _colors: null,
@@ -418,13 +454,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         });
       }
       const updateLegend = function() {
-        // update legend
         const display_func = null;
         const labels = ["unknown"];
         for (let i = 0; i < state._colors.length; i++) {
           const lower_limit = i === 0 ? Math.trunc(state._limits[i]) : Math.trunc(state._limits[i]+1);
           const upper_limit = Math.trunc(state._limits[i+1]);
-          const label = state._statProps.display(lower_limit) + " &ndash; " + state._statProps.display(upper_limit);
+          let label = state._statProps.display(lower_limit);
+          if (upper_limit !== lower_limit) {
+            label += " &ndash; " + state._statProps.display(upper_limit);
+          }
           labels.push(label);
         }
         legend.update([null].concat(state._colors), labels, state._statProps.getLabel());
@@ -432,6 +470,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
       // callbacks to be called when the corresponding prop in state is changed
       const stateCallbacks = {
+        propertyClass: function(val) {
+          state._propertyClassProps = propertyClasses[val];
+          state.summaryData = sales_totals[val];
+          state.choroplethData = sales_by_nbhd[val];
+          updateChoropleth();
+          updateLegend();
+          info.update();
+          graphControl.updateScatter();
+        },
         year: function(val) {
           updateChoropleth();
           updateLegend();
