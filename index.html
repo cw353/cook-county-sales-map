@@ -127,6 +127,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     .graph {
       max-width: 350px;
     }
+    .data-select select {
+      max-width: 200px;
+    }
     #map .leaflet-control-geocoder-alternatives {
       max-height: 115px;
       overflow-y: scroll;
@@ -229,7 +232,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       }
 
       const propertyClasses = {
-        2: { name: "Major Class 2", desc: "Residential, Non-Multi-Family" },
+        2: { name: "Major Class 2", desc: "Residential" },
+        3: { name: "Major Class 3", desc: "Multi-Family" },
+        9: { name: "Major Class 9", desc: "Class 3 Multi-Family Residential Real Estate Incentive" },
       };
 
       const saleStats = {
@@ -285,7 +290,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         const selectClass = $("<select id='select-class'></select>")
           .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
             return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
-          }));
+          }))
+          .on("change", function(e) {
+            updateState("propertyClass", e.target.value);
+          });;
         const selectStat = $("<select id='select-attr'></select>")
           .html(Object.entries(saleStats).map(function([stat, statProps]) {
             return `<option value="${stat}">${statProps.getLabel()}</option>`;
@@ -384,16 +392,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._updatePlot(this._scatterDiv, data_props, layout_props);
       }
 
+      const initialPropertyClass = "2";
+      const initialStat = "mean";
       const state = {
         layer: null,
         year: null,
         propertyClass: 2,
-        _propertyClassProps: propertyClasses[2],
+        _propertyClassProps: propertyClasses[initialPropertyClass],
         featureKey: null,
-        stat: "mean",
-        _statProps: saleStats["mean"],
-        choroplethData: sales_by_nbhd,
-        summaryData: sales_totals,
+        stat: initialStat,
+        _statProps: saleStats[initialStat],
+        choroplethData: sales_by_nbhd[initialPropertyClass],
+        summaryData: sales_totals[initialPropertyClass],
         years: sales_years,
         _limits: null,
         _colors: null,
@@ -432,6 +442,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
       // callbacks to be called when the corresponding prop in state is changed
       const stateCallbacks = {
+        propertyClass: function(val) {
+          state._propertyClassProps = propertyClasses[val];
+          state.summaryData = sales_totals[val];
+          state.choroplethData = sales_by_nbhd[val];
+          updateChoropleth();
+          updateLegend();
+          info.update();
+          graphControl.updateScatter();
+        },
         year: function(val) {
           updateChoropleth();
           updateLegend();
