@@ -239,8 +239,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             colors.push(chromaColors[i]);
           }
         }
-        console.log(chromaLimits);
-        console.log(limits);
         return [limits, colors];
       }
 
@@ -296,6 +294,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       };
 
       const dataSelectControl = L.control({position: "topright"});
+      const selectNbhd = $("<select id='select-nbhd'></select>"); // define here for use in callbacks
       dataSelectControl.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control data-select");
         L.DomEvent.disableClickPropagation(this._div);
@@ -306,8 +305,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           }))
           .on("change", function(e) {
             updateState("propertyClass", e.target.value);
-          });;
-        const selectStat = $("<select id='select-attr'></select>")
+          });
+        selectNbhd
+          .html([
+            "<option>None</option>",
+            Object.entries(townships_nbhds).map(function([township, nbhds]) {
+              return `<optgroup label='${township} Township'>` +
+                nbhds.map(function(nbhd) { return `<option>${nbhd}</option>` }).join("") +
+                "</optgroup>";
+            })
+          ])
+          .on("change", function(e) {
+            updateState("featureKey", e.target.value === "None" ? null : e.target.value);
+          });
+        const selectStat = $("<select id='select-stat'></select>")
           .html(Object.entries(saleStats).map(function([stat, statProps]) {
             return `<option value="${stat}">${statProps.getLabel()}</option>`;
           }))
@@ -320,8 +331,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             `<label for="select-attr">Select Property Class:</label>`,
             selectClass,
           ]),
-          $("<div data-select-div></div>").append([
-            `<label for="select-attr">Select Statistic:</label>`,
+          $("<div class='data-select-div'></div>").append([
+            `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
+            selectNbhd,
+          ]),
+          $("<div class='data-select-div'></div>").append([
+            `<label for="select-stat">Select Statistic:</label>`,
             selectStat,
           ]),
         ]);
@@ -502,6 +517,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           graphControl.update();
         },
         featureKey: function(val) {
+          // reset all sublayers to default style
+          state.layer.setStyle(defaultStyle);
+          // highlight the feature that has been selected
+          if (val != null) {
+            for (const sublayer of state.layer.getLayers()) {
+              if (sublayer.feature.properties.nbhd_code === val) {
+                highlightFeature(sublayer);
+                break;
+              }
+            };
+          }
+          // set the new value as selected in the neighborhood dropdown
+          selectNbhd.val(val == null ? "None" : val);
           info.update();
           graphControl.update();
         },
@@ -517,8 +545,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       }
 
       /* This function is based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
-      function highlightFeature(e) {
-        e.target.setStyle({
+      function highlightFeature(layer) {
+        layer.setStyle({
           weight: 5,
           color: '#333',
         }).bringToFront();
@@ -538,19 +566,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       state.layer.eachLayer(function (sublayer) {
         sublayer.on({
           click: function(e) {
-            // stop event propagation
-            // (so that clicks on this layer will not be handled by the same event handler as clicks elsewhere on the map)
+            // stop event propagation so that clicks on this layer will not be handled
+            // by the same event handler as clicks elsewhere on the map
             L.DomEvent.stopPropagation(e);
-            state.layer.setStyle(defaultStyle);
             const featureKey = sublayer.feature.properties.nbhd_code;
-            if (state.featureKey !== featureKey) {
-              // first click in a row selects this feature
-              updateState("featureKey", featureKey);
-              highlightFeature(e);
-            } else {
-              // second click in a row deselects this feature
-              updateState("featureKey", null);
-            }
+            // first click in a row selects this feature, second click in a row deselects it
+            updateState("featureKey", state.featureKey === featureKey ? null : featureKey);
           },
         });
       });
@@ -558,7 +579,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       // if a feature has been selected, clicking on the map outside of the layer deselects it
       map.on("click", function() {
         if (state.featureKey != null) {
-          state.layer.setStyle(defaultStyle);
           updateState("featureKey", null);
         }
       });
