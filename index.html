@@ -217,6 +217,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       /* Portions of this function are based on https://github.com/timwis/leaflet-choropleth (MIT License) */
       function getChoroplethProps(layer, data, getValue, options = null) {
         // overwrite default options with provided options (if any)
+        // note: opts.steps is the number of intervals that the function will aim to create,
+        // but depending on the range of the data, a smaller number of intervals may be returned
         const opts = Object.assign({
           mode: 'q', steps: 10, scale: 'viridis'
         }, options);
@@ -224,10 +226,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         layer.eachLayer(function(sublayer) {
           values.push(getValue(sublayer.feature.properties, data));
         });
-        const limits = chroma.limits(values, opts.mode, opts.steps);
-        const colors = opts.colors && opts.colors.length === limits.length
-          ? opts.colors
-          : chroma.scale(opts.scale).colors(limits.length-1);
+        // get opts.steps limits and opts.steps-1 colors from chroma
+        const chromaLimits = chroma.limits(values, opts.mode, opts.steps);
+        const chromaColors = chroma.scale(opts.scale).colors(chromaLimits.length-1);
+        // keep only non-duplicated limits (and their corresponding colors)
+        // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+        const limits = [chromaLimits[0]];
+        const colors = [];
+        for (let i = 0; i < chromaLimits.length-1; i++) {
+          if (chromaLimits[i+1] !== limits[limits.length-1]) {
+            limits.push(chromaLimits[i+1]);
+            colors.push(chromaColors[i]);
+          }
+        }
         return [limits, colors];
       }
 
