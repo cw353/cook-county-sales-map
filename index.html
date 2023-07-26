@@ -350,10 +350,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       const graphControl = L.control({position: "topright"});
       graphControl.onAdd = function (map) {
         this._container = L.DomUtil.create("div", "custom-control graph");
+        this._titleDiv = L.DomUtil.create("div", "graph-subdiv");
+        this._container.appendChild(this._titleDiv);
         this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
         this._container.appendChild(this._scatterDiv);
         this._initPlot();
-        this.updateScatter();
+        this.update();
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
         return this._container;
@@ -365,7 +367,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         };
         const layout = {
           width: 275, height: 225,
-          margin: { b: 35, l: 50, r: 35, t: 45 },
+          margin: { b: 35, l: 50, r: 35, t: 35 },
           xaxis: { title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, range: [state.years[0]-0.75, state.years[state.years.length-1]+0.75] },
           yaxis: { title: { font: { size: 11, } }, tickfont: { size: 10 } },
           title: { font: { family: "Arial", size: 13, color: "#555" } },
@@ -383,6 +385,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             toImageButtonOptions: { filename: 'cook_county_sales_scatterplot' }
           }
         );
+      }
+      graphControl.updateTitle = function() {
+        const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
+        this._titleDiv.innerHTML = `<h4>Trends in Major Class ${state.propertyClass} Property Sales<br>for ${scope}</h4>`;
       }
       graphControl._updatePlot = function(div, data_props, layout_props) {
         Plotly.update(this._scatterDiv, data_props, layout_props);
@@ -406,7 +412,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         };
         const layout_props = {
           'yaxis.title.text': ylabel.toUpperCase(),
-          'title.text': `<b>Sales of Major Class ${state.propertyClass} Properties for<br> ${scope}</b>`,
+          'title.text': `Yearly Trend in ${ylabel}`,
         };
         // turn off y-axis automargin when there is only one point to plot
         // to avoid overly precise range (which would cause display problems)
@@ -416,6 +422,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           layout_props['yaxis.autorange'] = true;
         }
         this._updatePlot(this._scatterDiv, data_props, layout_props);
+      }
+      graphControl.update = function() {
+        this.updateTitle();
+        this.updateScatter();
       }
 
       const initialPropertyClass = "2";
@@ -477,7 +487,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           updateChoropleth();
           updateLegend();
           info.update();
-          graphControl.updateScatter();
+          graphControl.update();
         },
         year: function(val) {
           updateChoropleth();
@@ -489,11 +499,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           updateChoropleth();
           updateLegend();
           info.update();
-          graphControl.updateScatter();
+          graphControl.update();
         },
         featureKey: function(val) {
           info.update();
-          graphControl.updateScatter();
+          graphControl.update();
         },
         opacity: function(val) { state.layer.setStyle( { opacity: val, fillOpacity: val } ); },
       }
