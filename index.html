@@ -452,13 +452,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         });
       }
       const updateLegend = function() {
-        // update legend
         const display_func = null;
         const labels = ["unknown"];
         for (let i = 0; i < state._colors.length; i++) {
           const lower_limit = i === 0 ? Math.trunc(state._limits[i]) : Math.trunc(state._limits[i]+1);
           const upper_limit = Math.trunc(state._limits[i+1]);
-          const label = state._statProps.display(lower_limit) + " &ndash; " + state._statProps.display(upper_limit);
+          let label = state._statProps.display(lower_limit);
+          if (upper_limit !== lower_limit) {
+            label += " &ndash; " + state._statProps.display(upper_limit);
+          }
           labels.push(label);
         }
         legend.update([null].concat(state._colors), labels, state._statProps.getLabel());
