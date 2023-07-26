@@ -234,11 +234,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         const limits = [chromaLimits[0]];
         const colors = [];
         for (let i = 0; i < chromaLimits.length-1; i++) {
-          if (chromaLimits[i+1] !== limits[limits.length-1]) {
+          if (Math.trunc(chromaLimits[i+1]) !== Math.trunc(limits[limits.length-1])) {
             limits.push(chromaLimits[i+1]);
             colors.push(chromaColors[i]);
           }
         }
+        console.log(chromaLimits);
+        console.log(limits);
         return [limits, colors];
       }
 
