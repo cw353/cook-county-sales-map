@@ -92,6 +92,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       font: 14px/16px Arial, Helvetica, sans-serif;
       font-weight: bold;
     }
+    .info {
+      max-height: 200px;
+      overflow-y: scroll;
+    }
     .info p {
       text-align: center;
     }
@@ -586,7 +590,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       const opacityControl = L.control.opacity(
         { "<div class='opacity-control-label'>Layer Opacity</div>" : state.layer },
         {
-          position: "bottomright",
+          position: "bottomleft",
           initialOpacity: state.opacity,
           updateOpacity: (layer, opacity) => updateState("opacity", opacity),
         },
@@ -619,6 +623,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       
       // add controls in order, proceeding clockwise from bottom left to bottom right
       // note that adding timelineSlider updates state.year and thus initializes the rest of the map
+      opacityControl.addTo(map); // bottomleft
       legend.addTo(map); // bottomleft
       L.control.defaultExtent({position: "topleft"}).addTo(map); // topleft
       info.addTo(map); // topleft
@@ -626,7 +631,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       graphControl.addTo(map); // topright
       geocoderControl.addTo(map); // topright
       timelineControl.addTo(map); // bottomright
-      opacityControl.addTo(map); // bottomright
       L.control.resizer({ direction: 'se' }).addTo(map); // bottomright
 
       // disable event propagation for geocoder control
