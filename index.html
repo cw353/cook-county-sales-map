@@ -125,8 +125,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       border-bottom: 1px solid black;
     }
     .data-select-div {
-      margin-top: 10px;
-      margin-bottom: 5px;
+      margin-top: 5px;
+      margin-bottom: 3px;
     }
     .graph {
       max-width: 350px;
@@ -414,7 +414,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       }
       graphControl.updateScatter = function() {
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
-        const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
         const x = [];
         const y = [];
         // plot only non-null data points
