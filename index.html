@@ -572,7 +572,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       }
       graphControl.updateScatter = function() {
         const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
-        const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
         const x = [];
         const y = [];
         // plot only non-null data points
