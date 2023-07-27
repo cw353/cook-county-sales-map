@@ -125,8 +125,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       border-bottom: 1px solid black;
     }
     .data-select-div {
-      margin-top: 10px;
-      margin-bottom: 5px;
+      margin-top: 5px;
+      margin-bottom: 2px;
     }
     .graph {
       max-width: 350px;
@@ -312,7 +312,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           });
         selectNbhd
           .html([
-            "<option>None</option>",
+            "<option>All Assessor Neighborhoods</option>",
             Object.entries(townships_nbhds).map(function([township, nbhds]) {
               return `<optgroup label='${township} Township'>` +
                 nbhds.map(function(nbhd) { return `<option>${nbhd}</option>` }).join("") +
@@ -320,7 +320,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             })
           ])
           .on("change", function(e) {
-            updateState("featureKey", e.target.value === "None" ? null : e.target.value);
+            updateState("featureKey", e.target.value === "All Assessor Neighborhoods" ? null : e.target.value);
           });
         const selectStat = $("<select id='select-stat'></select>")
           .html(Object.entries(saleStats).map(function([stat, statProps]) {
@@ -533,7 +533,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
           }
           // set the new value as selected in the neighborhood dropdown
-          selectNbhd.val(val == null ? "None" : val);
+          selectNbhd.val(val == null ? "All Assessor Neighborhoods" : val);
           info.update();
           graphControl.update();
         },
