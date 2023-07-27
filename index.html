@@ -591,6 +591,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           xaxis: { automargin: true, title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, range: [state.years[0]-0.75, state.years[state.years.length-1]+0.75] },
           yaxis: { automargin: true, title: { font: { size: 11, } }, tickfont: { size: 10 } },
           title: { font: { family: "Arial", size: 13, color: "#555" } },
+          hovermode: "x unified",
           paper_bgcolor: 'rgba(255,255,255,0.8)',
           plot_bgcolor: 'rgba(255,255,255,0)',
           modebar: { orientation: 'v', remove: ["select2d", "lasso2d", ]},
@@ -623,12 +624,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             y.push(data[year][state.stat]);
           }
         }
+        if (x.length === 0) {
+          x.push(null);
+          y.push(null);
+        }
         const ylabel = state._statProps.getLabel();
         const dataProps = {
           x: [x], y: [y],
           visible: true,
-          name: nbhd === "All Assessor Neighborhoods" ? "all" : nbhd,
-          hovertemplate: `Year: %{x}<br>${ylabel}: %{y${state._statProps.getD3Format()}}<extra></extra>`,
+          name: nbhd === "All Assessor Neighborhoods" ? "overall" : nbhd,
+          hovertemplate: `%{y${state._statProps.getD3Format()}}`,
         };
         const layoutProps = {
           'yaxis.title.text': ylabel.toUpperCase(),
