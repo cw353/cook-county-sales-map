@@ -541,9 +541,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           this[div] = L.DomUtil.create("div", "graph-subdiv");
           this._container.appendChild(this[div]);
         }
-        this._numExtraTraces = 2;
-        this._extraNbhds = new Array(this._numExtraTraces).fill(null);
+        // the main trace (trace 0) is controlled by alterations to state.featureKey
+        // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
+        this._numExtraTraces = 2; // number of extra traces
+        this._extraNbhds = new Array(this._numExtraTraces).fill(null); // track neighborhoods for extra traces
         this._initPlot();
+        // add select elements to select neighborhoods for extra traces
         for (let i = 0; i < this._numExtraTraces; i++) {
           $(this._selectDiv).append(
             $("<div class='select-div'></div>").append([
@@ -569,7 +572,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         }
         this.updateTitle();
-        this.updateTraces();
+        this.updateMainTrace();
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
         return this._container;
@@ -580,7 +583,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         for (let i = 0; i < 1 + numTraces; i++) {
           traces[i] = ({
             x: [], y: [],
-            visible: true,
+            visible: false, // initially hidden
             showlegend: true,
             hoverlabel: { align: "left" },
           });
@@ -625,6 +628,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             y.push(data[year][state.stat]);
           }
         }
+        // if no data was found, populate x and y with null
+        // to trick plotly into showing this trace on the legend
         if (x.length === 0) {
           x.push(null);
           y.push(null);
@@ -632,7 +637,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         const ylabel = state._statProps.getLabel();
         const dataProps = {
           x: [x], y: [y],
-          visible: true,
+          visible: true, // make visible if hidden
           name: nbhd === "All Assessor Neighborhoods" ? "overall" : nbhd,
           hovertemplate: `%{y${state._statProps.getD3Format()}}`,
         };
@@ -642,17 +647,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         };
         Plotly.update(this._scatterDiv, dataProps, layoutProps, [traceIndex]);
       }
-      graphControl.updateTraces = function() {
+      graphControl.updateMainTrace = function() {
         this._updateTrace(state.featureKey == null ? "All Assessor Neighborhoods" : state.featureKey, 0);
+      }
+      graphControl.updateExtraTraces = function() {
         for (let i = 0; i < this._numExtraTraces; i++) {
           if (this._extraNbhds[i] != null) {
             this._updateTrace(this._extraNbhds[i], i+1);
           }
         }
       }
-      registerStateCallback("propertyClass", () => graphControl.updateTitle());
-      for (const prop of ["propertyClass", "stat", "featureKey"]) {
-        registerStateCallback(prop, () => graphControl.updateTraces());
+      registerStateCallback("featureKey", () => {
+        graphControl.updateMainTrace();
+      });
+      registerStateCallback("propertyClass", () => {
+        graphControl.updateTitle()
+      });
+      for (const prop of ["propertyClass", "stat"]) {
+        registerStateCallback(prop, () => {
+          graphControl.updateMainTrace();
+          graphControl.updateExtraTraces();
+        });
       }
 
       const opacityControl = L.control.opacity(
