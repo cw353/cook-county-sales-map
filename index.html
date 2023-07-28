@@ -93,7 +93,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       font-weight: bold;
     }
     .info {
-      max-height: 200px;
+      max-height: 210px;
       overflow-y: scroll;
     }
     .info p {
@@ -587,10 +587,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
         const layout = {
           width: 350, height: 225,
-          margin: { b: 35, l: 50, r: 110, t: 35 },
+          margin: { b: 0, l: 50, r: 35, t: 35 },
           xaxis: { automargin: true, title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, range: [state.years[0]-0.75, state.years[state.years.length-1]+0.75] },
           yaxis: { automargin: true, title: { font: { size: 11, } }, tickfont: { size: 10 } },
           title: { font: { family: "Arial", size: 13, color: "#555" } },
+          legend: { orientation: "h", y: -0.5, yanchor: "bottom", x: 0.5, xanchor: "center" },
           hovermode: "x unified",
           paper_bgcolor: 'rgba(255,255,255,0.8)',
           plot_bgcolor: 'rgba(255,255,255,0)',
