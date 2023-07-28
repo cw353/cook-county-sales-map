@@ -53,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <style type="text/css">
     /* Portions of these styles are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
     #map {
-      height: 675px;
+      height: 690px;
       max-width: 100%;
     }
     a.external::after {
@@ -93,7 +93,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       font-weight: bold;
     }
     .info {
-      max-height: 200px;
+      max-height: 210px;
       overflow-y: scroll;
     }
     .info p {
@@ -124,7 +124,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     .legend i:last-of-type {
       border-bottom: 1px solid black;
     }
-    .data-select-div {
+    .select-div {
       margin-top: 5px;
       margin-bottom: 2px;
     }
@@ -134,8 +134,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     .data-select select {
       max-width: 200px;
     }
+    .graph-subdiv .select-div {
+      text-align: right;
+    }
+    .graph-subdiv select {
+      max-width: 125px;
+    }
     #map .leaflet-control-geocoder-alternatives {
-      max-height: 115px;
+      max-height: 90px;
       overflow-y: scroll;
     }
     #map .modebar {
@@ -434,6 +440,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         registerStateCallback(prop, () => info.update());
       }
 
+      const nbhdOptGroups = Object.entries(townships_nbhds).map(function([township, nbhds]) {
+        return `<optgroup label='${township} Township'>` +
+          nbhds.map(function(nbhd) { return `<option>${nbhd}</option>` }).join("") +
+          "</optgroup>";
+      });
+
       const dataSelectControl = L.control({position: "topright"});
       dataSelectControl.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control data-select");
@@ -449,11 +461,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         const selectNbhd = $("<select id='select-nbhd'></select>")
           .html([
             "<option>All Assessor Neighborhoods</option>",
-            Object.entries(townships_nbhds).map(function([township, nbhds]) {
-              return `<optgroup label='${township} Township'>` +
-                nbhds.map(function(nbhd) { return `<option>${nbhd}</option>` }).join("") +
-                "</optgroup>";
-            })
+            nbhdOptGroups,
           ])
           .on("change", function(e) {
             updateState("featureKey", e.target.value === "All Assessor Neighborhoods" ? null : e.target.value);
@@ -474,15 +482,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           });
         $(this._div).append([
           "<h4>Select Data to Display</h4>",
-          $("<div class='data-select-div'></div>").append([
-            `<label for="select-attr">Select Property Class:</label>`,
+          $("<div class='select-div'></div>").append([
+            `<label for="select-stat">Select Property Class:</label>`,
             selectClass,
           ]),
-          $("<div class='data-select-div'></div>").append([
+          $("<div class='select-div'></div>").append([
             `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
             selectNbhd,
           ]),
-          $("<div class='data-select-div'></div>").append([
+          $("<div class='select-div'></div>").append([
             `<label for="select-stat">Select Statistic:</label>`,
             selectStat,
           ]),
@@ -529,33 +537,71 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       const graphControl = L.control({position: "topright"});
       graphControl.onAdd = function (map) {
         this._container = L.DomUtil.create("div", "custom-control graph");
-        this._titleDiv = L.DomUtil.create("div", "graph-subdiv");
-        this._container.appendChild(this._titleDiv);
-        this._scatterDiv = L.DomUtil.create("div", "graph-subdiv");
-        this._container.appendChild(this._scatterDiv);
+        for (const div of ["_titleDiv", "_scatterDiv", "_selectDiv"]) {
+          this[div] = L.DomUtil.create("div", "graph-subdiv");
+          this._container.appendChild(this[div]);
+        }
+        // the main trace (trace 0) is controlled by alterations to state.featureKey
+        // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
+        this._numExtraTraces = 2; // number of extra traces
+        this._extraNbhds = new Array(this._numExtraTraces).fill(null); // track neighborhoods for extra traces
         this._initPlot();
-        this.update();
+        // add select elements to select neighborhoods for extra traces
+        for (let i = 0; i < this._numExtraTraces; i++) {
+          $(this._selectDiv).append(
+            $("<div class='select-div'></div>").append([
+              `<label class='italic' for="select-trace${i+2}">Add ${i+2}${i+2 === 2 ? "nd" : i+2 === 3 ? "rd" : "th"} neighborhood to graph:</label>`,
+              $(`<select id='select-trace${i+2}'></select>`)
+                .html([
+                  "<option>None</option>",
+                  "<option>All Assessor Neighborhoods</option>",
+                  nbhdOptGroups,
+                ])
+                .on("change", (e) => {
+                  const val = e.target.value;
+                  if (val === "None") {
+                    this._extraNbhds[i] = null;
+                    this._hideTrace(i+1);
+                  } else {
+                    this._extraNbhds[i] = val;
+                    this._updateTrace(val, i+1);
+                  }
+                })
+            ])
+          );
+
+        }
+        this.updateTitle();
+        this.updateMainTrace();
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
         return this._container;
       };
       graphControl._initPlot = function() {
-        const trace = {
-          x: [], y: state.years,
-          hoverlabel: { align: "left" },
-        };
+        const numTraces = 1 + this._numExtraTraces;
+        const traces = new Array(numTraces);
+        for (let i = 0; i < 1 + numTraces; i++) {
+          traces[i] = ({
+            x: [], y: [],
+            visible: false, // initially hidden
+            showlegend: true,
+            hoverlabel: { align: "left" },
+          });
+        }
         const layout = {
-          width: 275, height: 225,
-          margin: { b: 35, l: 50, r: 35, t: 35 },
-          xaxis: { title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, range: [state.years[0]-0.75, state.years[state.years.length-1]+0.75] },
-          yaxis: { title: { font: { size: 11, } }, tickfont: { size: 10 } },
+          width: 350, height: 225,
+          margin: { b: 0, l: 50, r: 35, t: 35 },
+          xaxis: { automargin: true, title: { text: "YEAR", font: { size: 11, }, standoff: 0, }, tickfont: { size: 10 }, dtick: 2, range: [state.years[0]-0.75, state.years[state.years.length-1]+0.75] },
+          yaxis: { automargin: true, title: { font: { size: 11, } }, tickfont: { size: 10 } },
           title: { font: { family: "Arial", size: 13, color: "#555" } },
+          legend: { orientation: "h", y: -0.25, yanchor: "top", x: 0.5, xanchor: "center" },
+          hovermode: "x unified",
           paper_bgcolor: 'rgba(255,255,255,0.8)',
           plot_bgcolor: 'rgba(255,255,255,0)',
           modebar: { orientation: 'v', remove: ["select2d", "lasso2d", ]},
         };
         Plotly.newPlot(this._scatterDiv,
-          [trace],
+          traces,
           layout,
           {
             scrollZoom: true,
@@ -566,14 +612,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         );
       }
       graphControl.updateTitle = function() {
-        const scope = state.featureKey == null ? "All Assessor Neighborhoods" : `Assessor Neighborhood ${state.featureKey}`;
-        this._titleDiv.innerHTML = `<h4>Trends in Major Class ${state.propertyClass} Property Sales<br>for ${scope}</h4>`;
+        this._titleDiv.innerHTML = `<h4>Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods</h4>`;
       }
-      graphControl._updatePlot = function(div, data_props, layout_props) {
-        Plotly.update(this._scatterDiv, data_props, layout_props);
+      graphControl._hideTrace = function(traceIndex) {
+        Plotly.update(this._scatterDiv, { visible: false, }, {}, [traceIndex]);
       }
-      graphControl.updateScatter = function() {
-        const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
+      graphControl._updateTrace = function(nbhd, traceIndex) {
+        const data = nbhd === "All Assessor Neighborhoods" ? state.summaryData : state.choroplethData[nbhd];
         const x = [];
         const y = [];
         // plot only non-null data points
@@ -583,30 +628,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             y.push(data[year][state.stat]);
           }
         }
+        // if no data was found, populate x and y with null
+        // to trick plotly into showing this trace on the legend
+        if (x.length === 0) {
+          x.push(null);
+          y.push(null);
+        }
         const ylabel = state._statProps.getLabel();
-        const data_props = {
+        const dataProps = {
           x: [x], y: [y],
-          hovertemplate: `Year: %{x}<br>${ylabel}: %{y${state._statProps.getD3Format()}}<extra></extra>`,
+          visible: true, // make visible if hidden
+          name: nbhd === "All Assessor Neighborhoods" ? "overall" : nbhd,
+          hovertemplate: `%{y${state._statProps.getD3Format()}}`,
         };
-        const layout_props = {
+        const layoutProps = {
           'yaxis.title.text': ylabel.toUpperCase(),
           'title.text': `Yearly Trend in ${ylabel}`,
         };
-        // turn off y-axis automargin when there is only one point to plot
-        // to avoid overly precise range (which would cause display problems)
-        if (y.length === 1) {
-          layout_props['yaxis.range'] = [y[0]/2, y[0]*2];
-        } else {
-          layout_props['yaxis.autorange'] = true;
+        Plotly.update(this._scatterDiv, dataProps, layoutProps, [traceIndex]);
+      }
+      graphControl.updateMainTrace = function() {
+        this._updateTrace(state.featureKey == null ? "All Assessor Neighborhoods" : state.featureKey, 0);
+      }
+      graphControl.updateExtraTraces = function() {
+        for (let i = 0; i < this._numExtraTraces; i++) {
+          if (this._extraNbhds[i] != null) {
+            this._updateTrace(this._extraNbhds[i], i+1);
+          }
         }
-        this._updatePlot(this._scatterDiv, data_props, layout_props);
       }
-      graphControl.update = function() {
-        this.updateTitle();
-        this.updateScatter();
-      }
-      for (const prop of ["propertyClass", "stat", "featureKey"]) {
-        registerStateCallback(prop, () => graphControl.update());
+      registerStateCallback("featureKey", () => {
+        graphControl.updateMainTrace();
+      });
+      registerStateCallback("propertyClass", () => {
+        graphControl.updateTitle()
+      });
+      for (const prop of ["propertyClass", "stat"]) {
+        registerStateCallback(prop, () => {
+          graphControl.updateMainTrace();
+          graphControl.updateExtraTraces();
+        });
       }
 
       const opacityControl = L.control.opacity(
