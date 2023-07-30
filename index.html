@@ -71,9 +71,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     .italic {
       font-style: italic;
     }
-    #map .leaflet-control-attribution {
-      margin-right: 35px;
-    }
     .custom-control, #map .leaflet-control-layers {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
@@ -378,7 +375,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       state.layer = L.geoJSON(
         neighborhoods,
         {
-          attribution: "<a class='pad-right' href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
+          attribution: "<a href='https://www.cookcountyassessor.com/'>Cook County Assessor's Office</a> (<a href='https://datacatalog.cookcountyil.gov/d/pcdw-pxtg'>Neighborhood Boundaries</a> & <a href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Parcel Sales</a>)",
           style: Object.assign({opacity: state.opacity, fillOpacity: state.opacity}, defaultStyle),
         }
       ).addTo(map);
