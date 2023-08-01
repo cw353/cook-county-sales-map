@@ -102,14 +102,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       font-weight: bold;
     }
     .info {
-      max-height: 220px;
+      max-height: 200px;
       overflow-y: scroll;
     }
     .info p {
       text-align: center;
-    }
-    .info p:last-of-type {
-      margin-bottom: 3px;
     }
     .legend {
       line-height: 18px;
@@ -150,7 +147,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       max-width: 125px;
     }
     #map .leaflet-control-geocoder-alternatives {
-      max-height: 85px;
+      max-height: 90px;
       overflow-y: scroll;
     }
     #map .modebar {
@@ -410,7 +407,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
       });
 
-      /* Portions of this control is based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
+      /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
       const info = L.control({position: "topleft"});
       info.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control info");
