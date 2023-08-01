@@ -279,8 +279,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       const initialStat = "mean";
       const state = {
         layer: null,
-        year: null,
-        propertyClass: 2,
+        year: sales_years[0],
+        propertyClass: initialPropertyClass,
         _propertyClassProps: propertyClasses[initialPropertyClass],
         featureKey: null,
         stat: initialStat,
@@ -462,6 +462,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
             return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
           }))
+          .val(state.propertyClass)
           .on("change", function(e) {
             updateState("propertyClass", e.target.value);
           });
@@ -470,6 +471,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             "<option>All Assessor Neighborhoods</option>",
             nbhdOptGroups,
           ])
+          .val("All Assessor Neighborhoods")
           .on("change", function(e) {
             updateState("featureKey", e.target.value === "All Assessor Neighborhoods" ? null : e.target.value);
           });
@@ -484,6 +486,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           .html(Object.entries(saleStats).map(function([stat, statProps]) {
             return `<option value="${stat}">${statProps.getLabel()}</option>`;
           }))
+          .val(state.stat)
           .on("change", function(e) {
             updateState("stat", e.target.value);
           });
@@ -564,6 +567,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                   "<option>All Assessor Neighborhoods</option>",
                   nbhdOptGroups,
                 ])
+                .val("None")
                 .on("change", (e) => {
                   const val = e.target.value;
                   if (val === "None") {
@@ -687,6 +691,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       );
 
       const timelineControl = L.control.timelineSlider({
+        initializeChange: true, // run changeMap when timeline is first loaded
         position: "bottomright",
         timelineItems: state.years,
         changeMap: function({label, index, map}) {
@@ -712,7 +717,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       });
       
       // add controls in order
-      // note that adding timelineSlider updates state.year and thus initializes the rest of the map
+      // note that adding timelineSlider sets state.year to state.years[0] and thus initializes the rest of the map
       opacityControl.addTo(map); // bottomleft
       legend.addTo(map); // bottomleft
       new L.Control.Bookmarks({position: "topleft"}).addTo(map); // topleft
