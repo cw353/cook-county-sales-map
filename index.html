@@ -41,7 +41,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" integrity="sha512-+uXbfI7GqghCnQUzxdA4P2cOwH00xc9s5gN551DUHWugGG1kOITswJniBDX4fQecqtWSoDUoJ4s1igb53PGENQ==" crossorigin="anonymous">
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js" integrity="sha512-qh/P3G5pJ41NomJU64K7iqtrGpjd1odJapzykgv3Ch5pHc0ecjZahh4huIsmvTPXDRwvI86mqh2AbbLwZRS8Cw==" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.zoomhome@1.0.0/src/css/leaflet.zoomhome.css" integrity="sha512-v4CFVge4wqlQ1I/1vjcU4zxRB6MxqXeWOmMasKGgqb3Vsd2kL8rnDjec5i60cqxUV644ve3ymw/sJaIb6BA4Ug==" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet.zoomhome@1.0.0/dist/leaflet.zoomhome.js" integrity="sha512-F+EqwyqDVuktdm006GQGDd+cM3piiJxJ7gu/Kte1eIhWLfgLsJQARkIeEXmLebZj1FGY4okxWoyATBnG+Br+jg==" crossorigin="anonymous"></script>  <script src="plugins/timeline-slider/leaflet-timeline-slider.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.zoomhome@1.0.0/dist/leaflet.zoomhome.js" integrity="sha512-F+EqwyqDVuktdm006GQGDd+cM3piiJxJ7gu/Kte1eIhWLfgLsJQARkIeEXmLebZj1FGY4okxWoyATBnG+Br+jg==" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-bookmarks@0.5.0/dist/leaflet.bookmarks.min.css" integrity="sha512-LHlqVdWeBsQf3tcn2Kfw069pBuz1AYPgaK/TXqHDPM2bInz7C9nGz7GEn2dGXPHea925Vvo5qgAkQq6ezQ0zUg==" crossorigin="anonymous">  <!--script src="https://cdn.jsdelivr.net/npm/leaflet-bookmarks@0.5.1/dist/index.min.js" integrity="sha512-OwAu7HUPkNCsgNPsAP/H5ooiErbKWWJdsVRnrqPi6ObMIRv+ys1zorvTS7JvcELeUHT1+xrn9NZbTVi4jGKR/w==" crossorigin="anonymous"></script-->
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-bookmarks@0.5.0/dist/L.Control.Bookmarks.min.js" integrity="sha512-9o7gQ7XCezlDkPPSF4Psqdxqzvu8AOPNCxma4Et0ONZZso6NSqh+fYV0fUZgolAyWhg4OHUZBmpTs2vZF5e0NA==" crossorigin="anonymous"></script>
+  <script src="plugins/timeline-slider/leaflet-timeline-slider.min.js"></script>
   <script src="plugins/opacity/L.Control.Opacity.js"></script>
 
   <!-- Data -->
@@ -71,8 +74,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     .italic {
       font-style: italic;
     }
-    #map .leaflet-control-attribution {
-      margin-right: 35px;
+    #map .bookmarks-container {
+      margin-top: 25px;
+      margin-left: 15px;
+    }
+    #map .bookmarks-list {
+      max-height: 95px;
+      overflow-y: scroll;
     }
     .custom-control, #map .leaflet-control-layers {
       padding: 6px 8px;
@@ -94,14 +102,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       font-weight: bold;
     }
     .info {
-      max-height: 220px;
+      max-height: 200px;
       overflow-y: scroll;
     }
     .info p {
       text-align: center;
-    }
-    .info p:last-of-type {
-      margin-bottom: 3px;
     }
     .legend {
       line-height: 18px;
@@ -142,7 +147,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       max-width: 125px;
     }
     #map .leaflet-control-geocoder-alternatives {
-      max-height: 85px;
+      max-height: 90px;
       overflow-y: scroll;
     }
     #map .modebar {
@@ -274,8 +279,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       const initialStat = "mean";
       const state = {
         layer: null,
-        year: null,
-        propertyClass: 2,
+        year: sales_years[0],
+        propertyClass: initialPropertyClass,
         _propertyClassProps: propertyClasses[initialPropertyClass],
         featureKey: null,
         stat: initialStat,
@@ -378,7 +383,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       state.layer = L.geoJSON(
         neighborhoods,
         {
-          attribution: "<a class='pad-right' href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Cook County Assessor's Office</a>",
+          attribution: "<a href='https://www.cookcountyassessor.com/'>Cook County Assessor's Office</a> (<a href='https://datacatalog.cookcountyil.gov/d/pcdw-pxtg'>Neighborhood Boundaries</a> & <a href='https://datacatalog.cookcountyil.gov/d/wvhk-k5uv'>Parcel Sales</a>)",
           style: Object.assign({opacity: state.opacity, fillOpacity: state.opacity}, defaultStyle),
         }
       ).addTo(map);
@@ -402,7 +407,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
       });
 
-      /* Portions of this control is based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
+      /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
       const info = L.control({position: "topleft"});
       info.onAdd = function(map) {
         this._div = L.DomUtil.create("div", "custom-control info");
@@ -457,6 +462,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           .html(Object.entries(propertyClasses).map(function([propertyClass, props]) {
             return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
           }))
+          .val(state.propertyClass)
           .on("change", function(e) {
             updateState("propertyClass", e.target.value);
           });
@@ -465,6 +471,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             "<option>All Assessor Neighborhoods</option>",
             nbhdOptGroups,
           ])
+          .val("All Assessor Neighborhoods")
           .on("change", function(e) {
             updateState("featureKey", e.target.value === "All Assessor Neighborhoods" ? null : e.target.value);
           });
@@ -479,6 +486,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           .html(Object.entries(saleStats).map(function([stat, statProps]) {
             return `<option value="${stat}">${statProps.getLabel()}</option>`;
           }))
+          .val(state.stat)
           .on("change", function(e) {
             updateState("stat", e.target.value);
           });
@@ -559,6 +567,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                   "<option>All Assessor Neighborhoods</option>",
                   nbhdOptGroups,
                 ])
+                .val("None")
                 .on("change", (e) => {
                   const val = e.target.value;
                   if (val === "None") {
@@ -682,6 +691,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       );
 
       const timelineControl = L.control.timelineSlider({
+        initializeChange: true, // run changeMap when timeline is first loaded
         position: "bottomright",
         timelineItems: state.years,
         changeMap: function({label, index, map}) {
@@ -706,10 +716,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
       });
       
-      // add controls in order, proceeding clockwise from bottom left to bottom right
-      // note that adding timelineSlider updates state.year and thus initializes the rest of the map
+      // add controls in order
+      // note that adding timelineSlider sets state.year to state.years[0] and thus initializes the rest of the map
       opacityControl.addTo(map); // bottomleft
       legend.addTo(map); // bottomleft
+      new L.Control.Bookmarks({position: "topleft"}).addTo(map); // topleft
       L.Control.zoomHome({position: "topleft", zoomHomeTitle: "Zoom to default view"}).addTo(map); // topleft
       info.addTo(map); // topleft
       dataSelectControl.addTo(map); // topright
