@@ -1,0 +1,132 @@
+/*
+ * Portions of these styles are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License)
+ * and https://github.com/Norkart/Leaflet-MiniMap/blob/master/example/fullscreen.css (BSD 2-Clause "Simplified" License)
+ */
+body {
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body,
+#map {
+  height: 100%;
+}
+
+a.external::after {
+  /* Source: Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Link-external-small-ltr-progressive.svg (CC BY 4.0) */
+  content: url(https://upload.wikimedia.org/wikipedia/commons/9/96/Link-external-small-ltr-progressive.svg);
+  margin: 0px 0px 0px 5px;
+}
+
+label {
+  margin-right: 5px;
+}
+
+.italic {
+  font-style: italic;
+}
+
+#map .bookmarks-container {
+  margin-top: 25px;
+  margin-left: 15px;
+}
+
+#map .bookmarks-list {
+  max-height: 95px;
+  overflow-y: scroll;
+}
+
+.custom-control,
+#map .leaflet-control-layers {
+  padding: 6px 8px;
+  font: 14px/16px Arial, Helvetica, sans-serif;
+}
+
+.custom-control,
+#map .leaflet-control-layers,
+#map .control_container,
+#map .leaflet-control-geocoder {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.custom-control h4,
+.opacity-control-label {
+  margin: 0 0 5px;
+  color: #555;
+  text-align: center;
+}
+
+.opacity-control-label {
+  font: 14px/16px Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}
+
+.info {
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.info p {
+  text-align: center;
+}
+
+.legend {
+  line-height: 18px;
+  color: #555;
+}
+
+.legend i {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.7;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+}
+
+.legend i:first-of-type {
+  border-top: 1px solid black;
+}
+
+.legend br:first-of-type {
+  line-height: 19px;
+}
+
+.legend i:last-of-type {
+  border-bottom: 1px solid black;
+}
+
+.select-div {
+  margin-top: 5px;
+  margin-bottom: 2px;
+}
+
+.graph {
+  max-width: 350px;
+}
+
+.data-select select {
+  max-width: 200px;
+}
+
+.graph-subdiv .select-div {
+  text-align: right;
+}
+
+.graph-subdiv select {
+  max-width: 125px;
+}
+
+#map .leaflet-control-geocoder-alternatives {
+  max-height: 90px;
+  overflow-y: scroll;
+}
+
+#map .modebar {
+  top: 30px;
+}
