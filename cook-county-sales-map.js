@@ -245,21 +245,21 @@ map.on("click", function () {
 });
 
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
-const info = L.control({ position: "topleft" });
-info.onAdd = function (map) {
-  this._div = L.DomUtil.create("div", "custom-control info");
-  L.DomEvent.disableClickPropagation(this._div);
-  L.DomEvent.disableScrollPropagation(this._div);
-  return this._div;
+const infoControl = L.control({ position: "topleft" });
+infoControl.onAdd = function (map) {
+  const container = L.DomUtil.create("div", "custom-control info");
+  L.DomEvent.disableClickPropagation(container);
+  L.DomEvent.disableScrollPropagation(container);
+  return container;
 };
-info.update = function () {
+infoControl.update = function () {
   // Add header
-  this._div.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
+  this._container.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
   // Add info about how to toggle view between summary of all areas and details of specific area
   if (state.featureKey == null) {
-    this._div.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
+    this._container.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
   } else {
-    this._div.innerHTML += "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
+    this._container.innerHTML += "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
   }
   // Add data items
   const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
@@ -271,17 +271,17 @@ info.update = function () {
     const statProps = saleStats[stat];
     items.push(`<b>${statProps.getLabel()}</b>: ${statProps.display(data && data[state.year] ? data[state.year][stat] : null)}`);
   }
-  this._div.innerHTML += items.join("<br>");
+  this._container.innerHTML += items.join("<br>");
   // Add link to source data
   let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '${state.propertyClass}') AND year=${state.year}`;
   if (state.featureKey != null) {
     query += ` AND nbhd_code='${state.featureKey}'`;
   }
   query += "&$limit=1000000000";
-  this._div.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
+  this._container.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
 };
 for (const prop of ["propertyClass", "featureKey", "year", "stat"]) {
-  registerStateCallback(prop, () => info.update());
+  registerStateCallback(prop, infoControl.update.bind(infoControl));
 }
 
 const nbhdOptGroups = Object.entries(townships_nbhds).map(function ([township, nbhds]) {
@@ -292,9 +292,9 @@ const nbhdOptGroups = Object.entries(townships_nbhds).map(function ([township, n
 
 const dataSelectControl = L.control({ position: "topright" });
 dataSelectControl.onAdd = function (map) {
-  this._div = L.DomUtil.create("div", "custom-control data-select");
-  L.DomEvent.disableClickPropagation(this._div);
-  L.DomEvent.disableScrollPropagation(this._div);
+  const container = L.DomUtil.create("div", "custom-control data-select");
+  L.DomEvent.disableClickPropagation(container);
+  L.DomEvent.disableScrollPropagation(container);
   const selectClass = $("<select id='select-class'></select>")
     .html(Object.entries(propertyClasses).map(function ([propertyClass, props]) {
       return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
@@ -327,7 +327,7 @@ dataSelectControl.onAdd = function (map) {
     .on("change", function (e) {
       updateState("stat", e.target.value);
     });
-  $(this._div).append([
+  $(container).append([
     "<h4>Select Data to Display</h4>",
     $("<div class='select-div'></div>").append([
       `<label for="select-stat">Select Property Class:</label>`,
@@ -342,24 +342,24 @@ dataSelectControl.onAdd = function (map) {
       selectStat,
     ]),
   ]);
-  return this._div;
+  return container;
 }
 
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
 const legend = L.control({ position: "bottomleft" });
 legend.onAdd = function (map) {
-  this._div = L.DomUtil.create("div", "custom-control legend");
-  L.DomEvent.disableClickPropagation(this._div);
-  L.DomEvent.disableScrollPropagation(this._div);
-  return this._div;
+  const container = L.DomUtil.create("div", "custom-control legend");
+  L.DomEvent.disableClickPropagation(container);
+  L.DomEvent.disableScrollPropagation(container);
+  return container;
 }
 legend.update = function (colors = null, labels = null, title = "Legend") {
   if (colors == null || labels == null || colors.length !== labels.length) {
-    this._div.innerHTML = "";
+    this._container.innerHTML = "";
   } else {
-    this._div.innerHTML = `<h4>${title}</h4>`;
+    this._container.innerHTML = `<h4>${title}</h4>`;
     for (let i = 0; i < colors.length; i++) {
-      this._div.innerHTML += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
+      this._container.innerHTML += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
     }
   }
 };
@@ -378,15 +378,14 @@ const updateLegend = function () {
   legend.update([null].concat(state._colors), labels, state._statProps.getLabel());
 }
 for (const prop of ["propertyClass", "year", "stat"]) {
-  registerStateCallback(prop, () => updateLegend());
+  registerStateCallback(prop, updateLegend);
 }
 
 const graphControl = L.control({ position: "topright" });
 graphControl.onAdd = function (map) {
-  this._container = L.DomUtil.create("div", "custom-control graph");
+  const container = L.DomUtil.create("div", "custom-control graph");
   for (const div of ["_titleDiv", "_scatterDiv", "_selectDiv"]) {
-    this[div] = L.DomUtil.create("div", "graph-subdiv");
-    this._container.appendChild(this[div]);
+    this[div] = L.DomUtil.create("div", "graph-subdiv", container);
   }
   // the main trace (trace 0) is controlled by alterations to state.featureKey
   // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
@@ -421,9 +420,9 @@ graphControl.onAdd = function (map) {
   }
   this.updateTitle();
   this.updateMainTrace();
-  L.DomEvent.disableClickPropagation(this._container);
-  L.DomEvent.disableScrollPropagation(this._container);
-  return this._container;
+  L.DomEvent.disableClickPropagation(container);
+  L.DomEvent.disableScrollPropagation(container);
+  return container;
 };
 graphControl._initPlot = function () {
   const numTraces = 1 + this._numExtraTraces;
@@ -505,16 +504,12 @@ graphControl.updateExtraTraces = function () {
     }
   }
 }
-registerStateCallback("featureKey", () => {
-  graphControl.updateMainTrace();
-});
-registerStateCallback("propertyClass", () => {
-  graphControl.updateTitle()
-});
+registerStateCallback("featureKey", graphControl.updateMainTrace.bind(graphControl));
+registerStateCallback("propertyClass", graphControl.updateTitle.bind(graphControl));
 for (const prop of ["propertyClass", "stat"]) {
-  registerStateCallback(prop, () => {
-    graphControl.updateMainTrace();
-    graphControl.updateExtraTraces();
+  registerStateCallback(prop, function() {
+    graphControl.updateMainTrace.bind(graphControl).call();
+    graphControl.updateExtraTraces.bind(graphControl).call();
   });
 }
 
