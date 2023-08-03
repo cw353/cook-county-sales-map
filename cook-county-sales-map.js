@@ -550,14 +550,19 @@ const geocoderControl = L.Control.geocoder({
 
 // add controls in order
 // note that adding timelineSlider sets state.year to state.years[0] and thus initializes the rest of the map
-opacityControl.addTo(map); // bottomleft
-legend.addTo(map); // bottomleft
-new L.Control.Bookmarks({ position: "topleft" }).addTo(map); // topleft
-L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map); // topleft
-info.addTo(map); // topleft
-dataSelectControl.addTo(map); // topright
-graphControl.addTo(map); // topright
-geocoderControl.addTo(map); // topright
+
+// topleft
+new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
+L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
+infoControl.addTo(map);
+// bottomleft
+opacityControl.addTo(map);
+legend.addTo(map);
+// topright
+dataSelectControl.addTo(map);
+graphControl.addTo(map);
+geocoderControl.addTo(map);
+// bottomright
 timelineControl.addTo(map); // bottomright
 
 // disable event propagation for geocoder control
