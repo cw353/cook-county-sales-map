@@ -388,16 +388,16 @@ for (const prop of ["propertyClass", "year", "stat"]) {
   registerStateCallback(prop, updateLegend);
 }
 
-const graphControl = L.control({ position: "topright" });
-graphControl.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control graph container");
-  container.setAttribute("id", "graph-control");
-  L.DomEvent.disableClickPropagation(container);
-  L.DomEvent.disableScrollPropagation(container);
-  this._headerDiv = L.DomUtil.create("div", "graph header", container);
-  this._contentsDiv = L.DomUtil.create("div", "graph contents", container);
+const graphControl = L.control.collapsible({
+  position: "topright",
+  containerId: "graph-control",
+  className: "graph-control",
+});
+graphControl.onAdd = function(map) {
+  const container = L.Control.Collapsible.prototype.onAdd.call(this, map);
+  const contentDiv = this.getContentDiv();
   for (const div of ["_scatterDiv", "_selectDiv"]) {
-    this[div] = L.DomUtil.create("div", "graph-subdiv", this._contentsDiv);
+    this[div] = L.DomUtil.create("div", "graph-subdiv", contentDiv);
   }
   // the main trace (trace 0) is controlled by alterations to state.featureKey
   // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
@@ -469,7 +469,7 @@ graphControl._initPlot = function () {
   );
 }
 graphControl.updateTitle = function () {
-  this._headerDiv.innerHTML = `<h4>Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods</h4>`;
+  this.updateHeaderText(`Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods`);
 }
 graphControl._hideTrace = function (traceIndex) {
   Plotly.update(this._scatterDiv, { visible: false, }, {}, [traceIndex]);

@@ -38,12 +38,14 @@ label {
 }
 
 .custom-control,
+.collapsible-control,
 #map .leaflet-control-layers {
   padding: 6px 8px;
   font: 14px/16px Arial, Helvetica, sans-serif;
 }
 
 .custom-control,
+.collapsible-control,
 #map .leaflet-control-layers,
 #map .control_container,
 #map .leaflet-control-geocoder {
@@ -54,6 +56,7 @@ label {
 }
 
 .custom-control h4,
+.collapsible-control h4,
 .opacity-control-label {
   margin: 0 0 5px;
   color: #555;
@@ -72,6 +75,7 @@ label {
 
 .info p {
   text-align: center;
+  margin: 8px;
 }
 
 .legend {
