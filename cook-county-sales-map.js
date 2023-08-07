@@ -295,9 +295,13 @@ const nbhdOptGroups = Object.entries(townships_nbhds).map(function ([township, n
 
 const dataSelectControl = L.control({ position: "topright" });
 dataSelectControl.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control data-select");
+  const container = L.DomUtil.create("div", "custom-control data-select container");
+  container.setAttribute("id", "data-select-control");
   L.DomEvent.disableClickPropagation(container);
   L.DomEvent.disableScrollPropagation(container);
+  this._headerDiv = L.DomUtil.create("div", "data-select header", container);
+  this._contentsDiv = L.DomUtil.create("div", "data-select contents", container);
+  this._headerDiv.innerHTML = "<h4>Select Data to Display</h4>";
   const selectClass = $("<select id='select-class'></select>")
     .html(Object.entries(propertyClasses).map(function ([propertyClass, props]) {
       return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
@@ -330,8 +334,7 @@ dataSelectControl.onAdd = function (map) {
     .on("change", function (e) {
       updateState("stat", e.target.value);
     });
-  $(container).append([
-    "<h4>Select Data to Display</h4>",
+  $(this._contentsDiv).append([
     $("<div class='select-div'></div>").append([
       `<label for="select-stat">Select Property Class:</label>`,
       selectClass,
