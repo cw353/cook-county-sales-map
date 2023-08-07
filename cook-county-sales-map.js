@@ -246,20 +246,23 @@ map.on("click", function () {
 
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
 const infoControl = L.control({ position: "topleft" });
-infoControl.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control info");
+infoControl.onAdd = function(map) {
+  const container = L.DomUtil.create("div", "custom-control info container");
+  container.setAttribute("id", "info-control");
   L.DomEvent.disableClickPropagation(container);
   L.DomEvent.disableScrollPropagation(container);
+  this._headerDiv = L.DomUtil.create("div", "info header", container);
+  this._contentsDiv = L.DomUtil.create("div", "info contents", container);
   return container;
 };
 infoControl.update = function () {
   // Add header
-  this._container.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
+  this._headerDiv.innerHTML = state.featureKey == null ? "<h4>Summary of<br>All Assessor Neighborhoods</h4>" : `<h4>Details for<br>Assessor Neighborhood ${state.featureKey}</h4>`;
   // Add info about how to toggle view between summary of all areas and details of specific area
   if (state.featureKey == null) {
-    this._container.innerHTML += "<p class='italic'>Click on an area to see details.</p>";
+    this._contentsDiv.innerHTML = "<p class='italic'>Click on an area to see details.</p>";
   } else {
-    this._container.innerHTML += "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
+    this._contentsDiv.innerHTML = "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
   }
   // Add data items
   const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
@@ -271,14 +274,14 @@ infoControl.update = function () {
     const statProps = saleStats[stat];
     items.push(`<b>${statProps.getLabel()}</b>: ${statProps.display(data && data[state.year] ? data[state.year][stat] : null)}`);
   }
-  this._container.innerHTML += items.join("<br>");
+  this._contentsDiv.innerHTML += items.join("<br>");
   // Add link to source data
   let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '${state.propertyClass}') AND year=${state.year}`;
   if (state.featureKey != null) {
     query += ` AND nbhd_code='${state.featureKey}'`;
   }
   query += "&$limit=1000000000";
-  this._container.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
+  this._contentsDiv.innerHTML += `<p><a class='external' href="${query}">View source data</a></p>`;
 };
 for (const prop of ["propertyClass", "featureKey", "year", "stat"]) {
   registerStateCallback(prop, infoControl.update.bind(infoControl));

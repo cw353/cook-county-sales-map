@@ -65,8 +65,8 @@ label {
   font-weight: bold;
 }
 
-.info {
-  max-height: 200px;
+.info.contents {
+  max-height: 150px;
   overflow-y: scroll;
 }
 
