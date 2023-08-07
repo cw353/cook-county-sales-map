@@ -82,12 +82,12 @@ label {
   font-weight: bold;
 }
 
-.info.contents {
+.info-control.contents {
   max-height: 150px;
   overflow-y: scroll;
 }
 
-.info p {
+.info-control p {
   text-align: center;
   margin: 8px;
 }

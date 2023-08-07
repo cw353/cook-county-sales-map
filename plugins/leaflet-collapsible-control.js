@@ -53,6 +53,9 @@ L.Control.Collapsible = L.Control.extend({
   getContentDiv() {
     return this._contentDiv.get(0);
   },
+  updateContent(html) {
+    this._contentDiv.html(html);
+  },
   _updateHeader() {
     this._header
       .attr("title", this._collapsed ? this.options.collapsedTitle : this.options.expandedTitle)
