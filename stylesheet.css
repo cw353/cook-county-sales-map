@@ -88,7 +88,7 @@ label {
   margin: 8px;
 }
 
-.legend {
+.legend .contents {
   line-height: 18px;
   color: #555;
 }
@@ -104,14 +104,12 @@ label {
 }
 
 .legend i:first-of-type {
+  height: 17px;
   border-top: 1px solid black;
 }
 
-.legend br:first-of-type {
-  line-height: 19px;
-}
-
 .legend i:last-of-type {
+  height: 17px;
   border-bottom: 1px solid black;
 }
 
