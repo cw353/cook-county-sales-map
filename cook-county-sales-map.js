@@ -390,9 +390,14 @@ for (const prop of ["propertyClass", "year", "stat"]) {
 
 const graphControl = L.control({ position: "topright" });
 graphControl.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control graph");
-  for (const div of ["_titleDiv", "_scatterDiv", "_selectDiv"]) {
-    this[div] = L.DomUtil.create("div", "graph-subdiv", container);
+  const container = L.DomUtil.create("div", "custom-control graph container");
+  container.setAttribute("id", "graph-control");
+  L.DomEvent.disableClickPropagation(container);
+  L.DomEvent.disableScrollPropagation(container);
+  this._headerDiv = L.DomUtil.create("div", "graph header", container);
+  this._contentsDiv = L.DomUtil.create("div", "graph contents", container);
+  for (const div of ["_scatterDiv", "_selectDiv"]) {
+    this[div] = L.DomUtil.create("div", "graph-subdiv", this._contentsDiv);
   }
   // the main trace (trace 0) is controlled by alterations to state.featureKey
   // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
@@ -427,8 +432,6 @@ graphControl.onAdd = function (map) {
   }
   this.updateTitle();
   this.updateMainTrace();
-  L.DomEvent.disableClickPropagation(container);
-  L.DomEvent.disableScrollPropagation(container);
   return container;
 };
 graphControl._initPlot = function () {
@@ -466,7 +469,7 @@ graphControl._initPlot = function () {
   );
 }
 graphControl.updateTitle = function () {
-  this._titleDiv.innerHTML = `<h4>Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods</h4>`;
+  this._headerDiv.innerHTML = `<h4>Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods</h4>`;
 }
 graphControl._hideTrace = function (traceIndex) {
   Plotly.update(this._scatterDiv, { visible: false, }, {}, [traceIndex]);
