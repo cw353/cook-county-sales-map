@@ -306,15 +306,14 @@ const nbhdOptGroups = Object.entries(townships_nbhds).map(function ([township, n
     "</optgroup>";
 });
 
-const dataSelectControl = L.control({ position: "topright" });
+const dataSelectControl = L.control.collapsible({
+  position: "topright",
+  containerId: "data-select-control",
+  className: "data-select-control",
+  headerText: "Select Data to Display"
+});
 dataSelectControl.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control data-select container");
-  container.setAttribute("id", "data-select-control");
-  L.DomEvent.disableClickPropagation(container);
-  L.DomEvent.disableScrollPropagation(container);
-  this._headerDiv = L.DomUtil.create("div", "data-select header", container);
-  this._contentsDiv = L.DomUtil.create("div", "data-select contents", container);
-  this._headerDiv.innerHTML = "<h4>Select Data to Display</h4>";
+  const container = L.Control.Collapsible.prototype.onAdd.call(this, map);
   const selectClass = $("<select id='select-class'></select>")
     .html(Object.entries(propertyClasses).map(function ([propertyClass, props]) {
       return `<option value="${propertyClass}">${props.name} (${props.desc})</option>`;
@@ -347,7 +346,7 @@ dataSelectControl.onAdd = function (map) {
     .on("change", function (e) {
       updateState("stat", e.target.value);
     });
-  $(this._contentsDiv).append([
+  $(this.getContentDiv()).append([
     $("<div class='select-div'></div>").append([
       `<label for="select-stat">Select Property Class:</label>`,
       selectClass,
@@ -365,23 +364,19 @@ dataSelectControl.onAdd = function (map) {
 }
 
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
-const legend = L.control({ position: "bottomleft" });
-legend.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control legend container");
-  container.setAttribute("id", "legend-control");
-  L.DomEvent.disableClickPropagation(container);
-  L.DomEvent.disableScrollPropagation(container);
-  this._headerDiv = L.DomUtil.create("div", "legend header", container);
-  this._contentsDiv = L.DomUtil.create("div", "legend contents", container);
-  return container;
-}
+const legend = L.control.collapsible({
+  position: "bottomleft",
+  containerId: "legend",
+  className: "legend",
+});
 // precondition: colors.length === labels.length
 legend.update = function (colors, labels, title = "Legend") {
-  this._headerDiv.innerHTML = `<h4>${title}</h4>`;
-  this._contentsDiv.innerHTML = "";
+  this.updateHeaderText(title);
+  let content = "";
   for (let i = 0; i < colors.length; i++) {
-    this._contentsDiv.innerHTML += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
+    content += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
   }
+  this.updateContent(content);
 };
 const updateLegend = function () {
   const display_func = null;
@@ -410,7 +405,7 @@ graphControl.onAdd = function(map) {
   const container = L.Control.Collapsible.prototype.onAdd.call(this, map);
   const contentDiv = this.getContentDiv();
   for (const div of ["_scatterDiv", "_selectDiv"]) {
-    this[div] = L.DomUtil.create("div", "graph-subdiv", contentDiv);
+    this[div] = L.DomUtil.create("div", "graph-control-subdiv", contentDiv);
   }
   // the main trace (trace 0) is controlled by alterations to state.featureKey
   // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements

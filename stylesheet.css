@@ -51,14 +51,12 @@ label {
   overflow-y: scroll;
 }
 
-.custom-control,
 .collapsible-control,
 #map .leaflet-control-layers {
   padding: 6px 8px;
   font: 14px/16px Arial, Helvetica, sans-serif;
 }
 
-.custom-control,
 .collapsible-control,
 #map .leaflet-control-layers,
 #map .control_container,
@@ -69,12 +67,15 @@ label {
   border: 2px solid rgba(0, 0, 0, 0.2);
 }
 
-.custom-control h4,
 .collapsible-control h4,
 .opacity-control-label {
-  margin: 0 0 5px;
+  margin: 0px;
   color: #555;
   text-align: center;
+}
+
+.collapsible-control .contents {
+  margin-top: 5px;
 }
 
 .opacity-control-label {
@@ -128,15 +129,15 @@ label {
   max-width: 350px;
 }
 
-.data-select select {
+.data-select-control select {
   max-width: 200px;
 }
 
-.graph-subdiv .select-div {
+.graph-control-subdiv .select-div {
   text-align: right;
 }
 
-.graph-subdiv select {
+.graph-control-subdiv select {
   max-width: 125px;
 }
 
