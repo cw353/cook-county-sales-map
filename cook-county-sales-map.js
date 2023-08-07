@@ -354,19 +354,20 @@ dataSelectControl.onAdd = function (map) {
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
 const legend = L.control({ position: "bottomleft" });
 legend.onAdd = function (map) {
-  const container = L.DomUtil.create("div", "custom-control legend");
+  const container = L.DomUtil.create("div", "custom-control legend container");
+  container.setAttribute("id", "legend-control");
   L.DomEvent.disableClickPropagation(container);
   L.DomEvent.disableScrollPropagation(container);
+  this._headerDiv = L.DomUtil.create("div", "legend header", container);
+  this._contentsDiv = L.DomUtil.create("div", "legend contents", container);
   return container;
 }
-legend.update = function (colors = null, labels = null, title = "Legend") {
-  if (colors == null || labels == null || colors.length !== labels.length) {
-    this._container.innerHTML = "";
-  } else {
-    this._container.innerHTML = `<h4>${title}</h4>`;
-    for (let i = 0; i < colors.length; i++) {
-      this._container.innerHTML += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
-    }
+// precondition: colors.length === labels.length
+legend.update = function (colors, labels, title = "Legend") {
+  this._headerDiv.innerHTML = `<h4>${title}</h4>`;
+  this._contentsDiv.innerHTML = "";
+  for (let i = 0; i < colors.length; i++) {
+    this._contentsDiv.innerHTML += `<i style="background: ${colors[i]}"></i> ${labels[i]}<br>`;
   }
 };
 const updateLegend = function () {
