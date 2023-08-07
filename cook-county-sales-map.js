@@ -534,7 +534,7 @@ for (const prop of ["propertyClass", "stat"]) {
 const opacityControl = L.control.opacity(
   { "<div class='opacity-control-label'>Layer Opacity</div>": state.layer },
   {
-    position: "bottomleft",
+    position: "topright",
     initialOpacity: state.opacity,
     updateOpacity: (layer, opacity) => updateState("opacity", opacity),
   },
@@ -574,14 +574,14 @@ new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
 L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
 infoControl.addTo(map);
 // bottomleft
-opacityControl.addTo(map);
 legend.addTo(map);
 // topright
 dataSelectControl.addTo(map);
 graphControl.addTo(map);
 geocoderControl.addTo(map);
+opacityControl.addTo(map);
 // bottomright
-timelineControl.addTo(map); // bottomright
+timelineControl.addTo(map);
 
 // disable event propagation for geocoder control
 L.DomEvent.disableClickPropagation(geocoderControl._container);

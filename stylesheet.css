@@ -83,11 +83,6 @@ label {
   font-weight: bold;
 }
 
-.info-control.contents {
-  max-height: 150px;
-  overflow-y: scroll;
-}
-
 .info-control p {
   text-align: center;
   margin: 8px;
@@ -125,10 +120,6 @@ label {
   margin-bottom: 2px;
 }
 
-.graph {
-  max-width: 350px;
-}
-
 .data-select-control select {
   max-width: 200px;
 }
@@ -141,11 +132,31 @@ label {
   max-width: 125px;
 }
 
-#map .leaflet-control-geocoder-alternatives {
-  max-height: 90px;
+#map .modebar {
+  top: 30px;
+}
+
+.collapsible-control .contents {
   overflow-y: scroll;
 }
 
-#map .modebar {
-  top: 30px;
+.info-control .contents {
+  max-height: 25vh;
+}
+
+.legend .contents {
+  max-height: 30vh;
+}
+
+.data-select-control .contents {
+  max-height: 12vh;
+}
+
+.graph-control .contents {
+  max-height: 40vh;
+}
+
+#map .leaflet-control-geocoder-alternatives {
+  max-height: 10vh;
+  overflow-y: scroll;
 }
