@@ -590,14 +590,20 @@ const geocoderControl = L.Control.geocoder({
   }
 });
 
-const tutorial = introJs().setOptions({
-  prevLabel: "Previous",
-  exitOnEsc: false,
-  exitOnOverlayClick: false,
-  showStepNumbers: true,
-  showBullets: false,
-  showProgress: true,
-});
+const tutorial = introJs()
+  .setOptions({
+    prevLabel: "Previous",
+    exitOnEsc: false,
+    exitOnOverlayClick: false,
+    showStepNumbers: true,
+    showBullets: false,
+    showProgress: true,
+  })
+  .onexit(function() {
+    if (!localStorage.getItem("cook-county-sales-map-tutorial-finished")) {
+      localStorage.setItem("cook-county-sales-map-tutorial-finished", true);
+    }
+  });
 
 const helpButton = L.control({position: "topleft"});
 // This function is adapted from https://github.com/Leaflet/Leaflet/blob/main/src/control/Control.Zoom.js (BSD 2-Clause "Simplified" License)
@@ -663,4 +669,7 @@ tutorial.addSteps([
   }
 ]);
 
-tutorial.start();
+// start the tutorial if it hasn't been seen at least once
+if (!localStorage.getItem("cook-county-sales-map-tutorial-finished")) {
+  tutorial.start();
+}
