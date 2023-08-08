@@ -321,7 +321,7 @@ infoControl.update = function () {
     query += ` AND nbhd_code='${state.featureKey}'`;
   }
   query += "&$limit=1000000000";
-  content += `<p class='italic'>Data was last updated on ${update_date}. View original data <a class='external' href="${query}">here.</a></p>`;
+  content += `<p id='info-control-meta' class='italic'>Data was last updated on ${update_date}. View original data <a class='external' href="${query}">here.</a></p>`;
   this.updateContent(content);
 };
 for (const prop of ["propertyClass", "featureKey", "year", "stat"]) {
@@ -350,6 +350,14 @@ dataSelectControl.onAdd = function (map) {
     .on("change", function (e) {
       updateState("propertyClass", e.target.value);
     });
+  const selectStat = $("<select id='select-stat'></select>")
+    .html(Object.entries(saleStats).map(function ([stat, statProps]) {
+      return `<option value="${stat}">${statProps.getLabel()}</option>`;
+    }))
+    .val(state.stat)
+    .on("change", function (e) {
+      updateState("stat", e.target.value);
+    });
   const selectNbhd = $("<select id='select-nbhd'></select>")
     .html([
       "<option>All Assessor Neighborhoods</option>",
@@ -366,26 +374,18 @@ dataSelectControl.onAdd = function (map) {
       selectNbhd.val(newVal);
     }
   });
-  const selectStat = $("<select id='select-stat'></select>")
-    .html(Object.entries(saleStats).map(function ([stat, statProps]) {
-      return `<option value="${stat}">${statProps.getLabel()}</option>`;
-    }))
-    .val(state.stat)
-    .on("change", function (e) {
-      updateState("stat", e.target.value);
-    });
   $(this.getContentDiv()).append([
-    $("<div class='select-div'></div>").append([
-      `<label for="select-stat">Select Property Class:</label>`,
+    $("<div id='select-class-div' class='select-div'></div>").append([
+      `<label for="select-class">Select Property Class:</label>`,
       selectClass,
     ]),
-    $("<div class='select-div'></div>").append([
-      `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
-      selectNbhd,
-    ]),
-    $("<div class='select-div'></div>").append([
+    $("<div id='select-stat-div' class='select-div'></div>").append([
       `<label for="select-stat">Select Statistic:</label>`,
       selectStat,
+    ]),
+    $("<div id='select-nbhd-div' class='select-div'></div>").append([
+      `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
+      selectNbhd,
     ]),
   ]);
   return container;
@@ -600,7 +600,6 @@ const tutorial = introJs()
     exitOnEsc: false,
     exitOnOverlayClick: false,
     showStepNumbers: true,
-    //showBullets: false,
     showProgress: true,
   })
   .onexit(function() {
@@ -660,30 +659,7 @@ tutorial.addSteps([
       "</p><p>Follow this tutorial to learn how to use the map.</p>"
   },
   {
-    element: sampleFeature,
-    intro: "<p>The sales map is divided into areas called <b>assessor neighborhoods</b>, such as this one." +
-      "<p>Assessor neighborhoods are numbered geographical regions that the Cook County Assessor's Office uses for record-keeping and analysis. (Note that these areas don't necessarily correspond to named neighborhoods in Cook County.)</p>",
-  },
-  {
-    element: sampleFeature,
-    intro: "<p>If you click on an assessor neighborhood, it will be highlighted on the map to show that it has been <b>selected</b>.</p>"
-  },
-  {
-    element: sampleFeature,
-    intro: "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"
-  },
-  {
-    element: infoControl._container,
-    intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>" +
-      "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
-  },
-  {
-    element: infoControl._container,
-    intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>" +
-      "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
-  },
-  {
-    intro: "<p>Move around on the map by clicking and dragging the map or by using the arrow keys on your keyboard."
+    intro: "<p>Move around on the map by clicking and dragging or by using the arrow keys on your keyboard."
   },
   {
     element: zoomhomeControl._zoomInButton,
@@ -694,17 +670,69 @@ tutorial.addSteps([
     intro: "<p>Click this button to zoom out on the map.</p>",
   },
   {
-    element: zoomhomeControl._zoomHomeButton,
-    intro: "<p>Click this button to zoom to the map's default view.</p>" +
-      "<p>This can be a handy way to quickly zoom out and view all assessor neighborhoods at once.</p>",
+    intro: "<p>You can also zoom in and out by scrolling up and down or by double-clicking the map."
   },
   {
-    intro: "<p>You can also zoom in and out by scrolling up and down or by double-clicking the map."
+    element: zoomhomeControl._zoomHomeButton,
+    intro: "<p>Click this button to zoom to the map's default view.</p>" +
+      "<p>This can be a handy way to quickly zoom out and view all areas on the map at once.</p>",
   },
   {
     element: bookmarksControl._container,
     intro: "<p>Click this button to add, view, and edit bookmarks. Bookmarks are a handy way to mark spots on the map.</p>" +
       "<p>Your bookmarks will be saved when you exit this page and restored when you visit it again.</p>"
+  },
+  {
+    element: sampleFeature,
+    intro: "<p>The map is divided into areas like this one that are called <b>assessor neighborhoods</b>." +
+      "<p>Assessor neighborhoods are numbered geographical regions that the Cook County Assessor's Office uses for record-keeping and analysis. (Note that these areas don't necessarily correspond to named neighborhoods in Cook County.)</p>",
+  },
+  {
+    element: dataSelectControl._container,
+    intro: "<p>You can change which data is being shown on the map by using these dropdown menus.</p>"
+  },
+  {
+    element: document.querySelector('#select-class-div'),
+    intro: "<p>Every property belongs to a <b>property class</b> that describes what type of property it is. For example, a property belonging to Major Class 1 is vacant, while a property belonging to Major Class 3 is a multi-family residential property.</p>" +
+    "<p>Use this dropdown menu to <b>select the property class</b> to show on the map. (See <a class='external' href='https://www.cookcountyassessor.com/form-document/codes-classification-property'>this link</a> for more information about property classes.)</p>"
+  },
+  {
+    element: document.querySelector('#select-stat-div'),
+    intro: "<p>This map shows a variety of useful <b>summary statistics</b> about property sales.</p>" +
+    "<p>Use this dropdown menu to <b>select the statistic</b> to show on the map. The colors of the assessor neighborhoods will change based on the values of this statistic.</p>"
+  },
+  {
+    element: document.querySelector('#select-nbhd-div'),
+    intro: "<p>Use this dropdown menu to <b>select an assessor neighborhood</b>. The selected area will be highlighted on the map.</p>"
+  },
+  {
+    element: sampleFeature,
+    intro: "<p>You can also select an assessor neighborhood by clicking on it.</p>"
+  },
+  {
+    element: sampleFeature,
+    intro: "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"
+  },
+  {
+    element: infoControl._container,
+    intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>"
+  },
+  {
+    element: infoControl._container,
+    intro: "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
+  },
+  {
+    element: document.querySelector('#info-control-meta'),
+    intro: "<p>You can find out when the data on this map was last updated by looking here.</p>"
+  },
+  {
+    element: document.querySelector('#info-control-meta'),
+    intro: "<p>You can also find a link to the original data from which the summary statistics were derived.</p>"
+  },
+  {
+    element: legend._container,
+    intro: "<p>The legend for the map is shown here.</p>" +
+      "<p>(The intervals are determined using the quantile classification method.)</p>"
   },
 ]);
 
