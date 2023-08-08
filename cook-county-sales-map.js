@@ -261,7 +261,11 @@ state.layer = L.geoJSON(
     style: Object.assign({ opacity: state.opacity, fillOpacity: state.opacity }, defaultStyle),
   }
 ).addTo(map);
+let sampleFeature = null;
 state.layer.eachLayer(function (sublayer) {
+  if (sublayer.feature.properties.nbhd_code === '10021') {
+    sampleFeature = sublayer._path;
+  }
   sublayer.on({
     click: function (e) {
       // stop event propagation so that clicks on this layer will not be handled
@@ -596,7 +600,7 @@ const tutorial = introJs()
     exitOnEsc: false,
     exitOnOverlayClick: false,
     showStepNumbers: true,
-    showBullets: false,
+    //showBullets: false,
     showProgress: true,
   })
   .onexit(function() {
@@ -631,8 +635,8 @@ helpButton.onAdd = function(map) {
 // note that adding timelineSlider sets state.year to state.years[0] and thus initializes the rest of the map
 
 // topleft
-new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
-L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
+const bookmarksControl = new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
+const zoomhomeControl = L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
 helpButton.addTo(map);
 infoControl.addTo(map);
 // bottomleft
@@ -651,22 +655,57 @@ L.DomEvent.disableScrollPropagation(geocoderControl._container);
 
 tutorial.addSteps([
   {
-    intro: "<p>Welcome to the Cook County Sales Map, an interactive map of property sales in Cook County, Illinois!</p>" +
+    intro: "<p>Welcome to the Cook County Sales Map, an interactive map of property sales in Cook County, Illinois.</p>" +
       "<p>The <a href='https://github.com/cw353/cook-county-sales-map'>source code</a> for this map is freely available under the <a href='http://www.gnu.org/licenses/'>GNU GPL license</a>." +
       "</p><p>Follow this tutorial to learn how to use the map.</p>"
   },
   {
-    element: document.querySelector('#info-control'),
-    intro: "Info control"
+    element: sampleFeature,
+    intro: "<p>The sales map is divided into areas called <b>assessor neighborhoods</b>, such as this one." +
+      "<p>Assessor neighborhoods are numbered geographical regions that the Cook County Assessor's Office uses for record-keeping and analysis. (Note that these areas don't necessarily correspond to named neighborhoods in Cook County.)</p>",
   },
   {
-    element: document.querySelector('#legend'),
-    intro: "Legend"
+    element: sampleFeature,
+    intro: "<p>If you click on an assessor neighborhood, it will be highlighted on the map to show that it has been <b>selected</b>.</p>"
   },
   {
-    element: document.querySelector('#data-select-control'),
-    intro: "Data select control"
-  }
+    element: sampleFeature,
+    intro: "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"
+  },
+  {
+    element: infoControl._container,
+    intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>" +
+      "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
+  },
+  {
+    element: infoControl._container,
+    intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>" +
+      "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
+  },
+  {
+    intro: "<p>Move around on the map by clicking and dragging the map or by using the arrow keys on your keyboard."
+  },
+  {
+    element: zoomhomeControl._zoomInButton,
+    intro: "<p>Click this button to zoom in on the map.</p>",
+  },
+  {
+    element: zoomhomeControl._zoomOutButton,
+    intro: "<p>Click this button to zoom out on the map.</p>",
+  },
+  {
+    element: zoomhomeControl._zoomHomeButton,
+    intro: "<p>Click this button to zoom to the map's default view.</p>" +
+      "<p>This can be a handy way to quickly zoom out and view all assessor neighborhoods at once.</p>",
+  },
+  {
+    intro: "<p>You can also zoom in and out by scrolling up and down or by double-clicking the map."
+  },
+  {
+    element: bookmarksControl._container,
+    intro: "<p>Click this button to add, view, and edit bookmarks. Bookmarks are a handy way to mark spots on the map.</p>" +
+      "<p>Your bookmarks will be saved when you exit this page and restored when you visit it again.</p>"
+  },
 ]);
 
 // start the tutorial if it hasn't been seen at least once
