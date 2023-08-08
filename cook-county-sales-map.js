@@ -610,3 +610,33 @@ timelineControl.addTo(map);
 // disable event propagation for geocoder control
 L.DomEvent.disableClickPropagation(geocoderControl._container);
 L.DomEvent.disableScrollPropagation(geocoderControl._container);
+
+const tutorial = introJs().setOptions({
+  prevLabel: "Previous",
+  exitOnEsc: false,
+  exitOnOverlayClick: false,
+  showStepNumbers: true,
+  showBullets: false,
+  showProgress: true,
+  steps: [
+    {
+      intro: "<p>Welcome to the Cook County Sales Map, an interactive map of property sales in Cook County, Illinois!</p>" + 
+        "<p>The <a href='https://github.com/cw353/cook-county-sales-map'>source code</a> for this map is freely available under the <a href='http://www.gnu.org/licenses/'>GNU GPL license</a>." + 
+        "</p><p>Follow this tutorial to learn how to use the map.</p>"
+    },
+    {
+      element: document.querySelector('#info-control'),
+      intro: "Info control"
+    },
+    {
+      element: document.querySelector('#legend'),
+      intro: "Legend"
+    },
+    {
+      element: document.querySelector('#data-select-control'),
+      intro: "Data select control"
+    }
+  ]
+})
+
+tutorial.start();
