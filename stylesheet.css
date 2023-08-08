@@ -47,7 +47,7 @@ label {
 }
 
 #map .bookmarks-list {
-  max-height: 95px;
+  max-height: 140px;
   overflow-y: scroll;
 }
 
@@ -135,13 +135,18 @@ label {
   top: 30px;
 }
 
+.help-button {
+  /* Source: Wikimedia Commons, https://commons.wikimedia.org/wiki/File:OOjs_UI_icon_helpNotice-ltr-progressive.svg (MIT) */
+  background-image: url("https://upload.wikimedia.org/wikipedia/commons/1/12/OOjs_UI_icon_helpNotice-ltr-progressive.svg")
+}
+
 .collapsible-control .contents {
   overflow-y: scroll;
 }
 
 .info-control .contents {
   max-width: 22vw;
-  max-height: 25vh;
+  max-height: 22vh;
 }
 
 .legend .contents {

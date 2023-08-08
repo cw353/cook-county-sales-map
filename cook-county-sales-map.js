@@ -590,12 +590,44 @@ const geocoderControl = L.Control.geocoder({
   }
 });
 
+const tutorial = introJs().setOptions({
+  prevLabel: "Previous",
+  exitOnEsc: false,
+  exitOnOverlayClick: false,
+  showStepNumbers: true,
+  showBullets: false,
+  showProgress: true,
+});
+
+const helpButton = L.control({position: "topleft"});
+// This function is adapted from https://github.com/Leaflet/Leaflet/blob/main/src/control/Control.Zoom.js (BSD 2-Clause "Simplified" License)
+helpButton._createButton = function(html, title, className, container, fn) {
+  const link = L.DomUtil.create('a', className, container);
+  link.innerHTML = html;
+  link.href = '#';
+  link.title = title;
+  // Will force screen readers like VoiceOver to read this as "Zoom in - button"
+  link.setAttribute('role', 'button');
+  link.setAttribute('aria-label', title);
+  L.DomEvent.disableClickPropagation(link);
+  L.DomEvent.on(link, 'click', L.DomEvent.stop);
+  L.DomEvent.on(link, 'click', fn, this);
+  L.DomEvent.on(link, 'click', this._refocusOnMap, this);
+  return link;
+}
+helpButton.onAdd = function(map) {
+  const container = L.DomUtil.create("div", "leaflet-bar help-control");
+  this._createButton("<i></i>", "View map tutorial", "help-button", container, tutorial.start.bind(tutorial));
+  return container;
+}
+
 // add controls in order
 // note that adding timelineSlider sets state.year to state.years[0] and thus initializes the rest of the map
 
 // topleft
 new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
 L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
+helpButton.addTo(map);
 infoControl.addTo(map);
 // bottomleft
 legend.addTo(map);
@@ -611,32 +643,24 @@ timelineControl.addTo(map);
 L.DomEvent.disableClickPropagation(geocoderControl._container);
 L.DomEvent.disableScrollPropagation(geocoderControl._container);
 
-const tutorial = introJs().setOptions({
-  prevLabel: "Previous",
-  exitOnEsc: false,
-  exitOnOverlayClick: false,
-  showStepNumbers: true,
-  showBullets: false,
-  showProgress: true,
-  steps: [
-    {
-      intro: "<p>Welcome to the Cook County Sales Map, an interactive map of property sales in Cook County, Illinois!</p>" + 
-        "<p>The <a href='https://github.com/cw353/cook-county-sales-map'>source code</a> for this map is freely available under the <a href='http://www.gnu.org/licenses/'>GNU GPL license</a>." + 
-        "</p><p>Follow this tutorial to learn how to use the map.</p>"
-    },
-    {
-      element: document.querySelector('#info-control'),
-      intro: "Info control"
-    },
-    {
-      element: document.querySelector('#legend'),
-      intro: "Legend"
-    },
-    {
-      element: document.querySelector('#data-select-control'),
-      intro: "Data select control"
-    }
-  ]
-})
+tutorial.addSteps([
+  {
+    intro: "<p>Welcome to the Cook County Sales Map, an interactive map of property sales in Cook County, Illinois!</p>" +
+      "<p>The <a href='https://github.com/cw353/cook-county-sales-map'>source code</a> for this map is freely available under the <a href='http://www.gnu.org/licenses/'>GNU GPL license</a>." +
+      "</p><p>Follow this tutorial to learn how to use the map.</p>"
+  },
+  {
+    element: document.querySelector('#info-control'),
+    intro: "Info control"
+  },
+  {
+    element: document.querySelector('#legend'),
+    intro: "Legend"
+  },
+  {
+    element: document.querySelector('#data-select-control'),
+    intro: "Data select control"
+  }
+]);
 
 tutorial.start();
