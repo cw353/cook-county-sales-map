@@ -94,29 +94,43 @@ function getChoroplethProps(layer, data, getValue, options = null) {
     mode: 'q', steps: 10, scale: 'viridis'
   }, options);
   const values = [];
-  layer.eachLayer(function (sublayer) {
-    values.push(getValue(sublayer.feature.properties, data));
+  layer.eachLayer(function(sublayer) {
+    const val = getValue(sublayer.feature.properties, data);
+    if (!isNaN(val)) {
+      values.push(val);
+    }
   });
-  // get opts.steps limits and opts.steps-1 colors from chroma
+  // if there are no values, return empty lists for both limits and colors
+  if (values.length === 0) {
+    return [[],[]];
+  }
+  // get opts.steps limits from chroma
   // (truncate limits under the assumption that all data has been rounded to the nearest integer to simplify interpretation)
   const chromaLimits = chroma.limits(values, opts.mode, opts.steps).map((limit) => Math.trunc(limit));
-  const chromaColors = chroma.scale(opts.scale).colors(chromaLimits.length - 1);
-  // keep only non-duplicated limits (and their corresponding colors)
-  // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+  // keep only non-duplicated limits
   const limits = [chromaLimits[0]];
-  const colors = [];
   for (let i = 0; i < chromaLimits.length - 1; i++) {
     if (chromaLimits[i + 1] !== limits[limits.length - 1]) {
       limits.push(chromaLimits[i + 1]);
-      colors.push(chromaColors[i]);
     }
   }
+  // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+  // (except in the case where there is exactly one limit, in which case any value less than or equal
+  // to limits[0] receives the color colors[0])
+  const colors = chroma.scale(opts.scale).colors(limits.length === 1 ? 1 : limits.length-1);
   return [limits, colors];
 }
 
 const propertyClasses = {
+  0: { name: "Major Class 0", desc: "Exempt and Railroad" },
+  1: { name: "Major Class 1", desc: "Vacant" },
   2: { name: "Major Class 2", desc: "Residential" },
   3: { name: "Major Class 3", desc: "Multi-Family" },
+  4: { name: "Major Class 4", desc: "Not-For-Profit" },
+  5: { name: "Major Class 5", desc: "Commercial/Industrial" },
+  6: { name: "Major Class 6", desc: "Industrial Incentive" },
+  7: { name: "Major Class 7", desc: "Commercial Incentive" },
+  8: { name: "Major Class 8", desc: "Commercial/Industrial Incentive" },
   9: { name: "Major Class 9", desc: "Class 3 Multi-Family Residential Real Estate Incentive" },
 };
 
@@ -149,14 +163,21 @@ function updateChoropleth() {
   // TODO: add caching for limits and colors?
   [state._limits, state._colors] = getChoroplethProps(state.layer, state.choroplethData, getFeatureValue);
   // update fill colors on map
-  state.layer.setStyle(function (feature) {
+  state.layer.setStyle(function(feature) {
     const val = getFeatureValue(feature.properties, state.choroplethData);
     let fillColor = null;
     if (val != null && !isNaN(val)) {
-      for (let i = 0; i < state._limits.length - 1; i++) {
-        if (val <= state._limits[i + 1]) {
-          fillColor = state._colors[i];
-          break;
+      // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+      // (except in the case where there is exactly one limit, in which case any value less than or equal
+      // to limits[0] receives the color colors[0])
+      if (state._limits.length === 1 && val <= state._limits[0]) {
+        fillColor = state._colors[0];
+      } else {
+        for (let i = 0; i < state._limits.length - 1; i++) {
+          if (val <= state._limits[i+1]) {
+            fillColor = state._colors[i];
+            break;
+          }
         }
       }
     }
@@ -383,9 +404,9 @@ const updateLegend = function () {
   const labels = ["unknown"];
   for (let i = 0; i < state._colors.length; i++) {
     const lower_limit = i === 0 ? state._limits[i] : state._limits[i] + 1;
-    const upper_limit = state._limits[i + 1];
+    const upper_limit = i+1 < state._limits.length ? state._limits[i+1] : NaN;
     let label = state._statProps.display(lower_limit);
-    if (upper_limit !== lower_limit) {
+    if (!isNaN(upper_limit) && upper_limit !== lower_limit) {
       label += " &ndash; " + state._statProps.display(upper_limit);
     }
     labels.push(label);
