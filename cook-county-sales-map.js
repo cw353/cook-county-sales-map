@@ -625,7 +625,7 @@ helpButton._createButton = function(html, title, className, container, fn) {
 }
 helpButton.onAdd = function(map) {
   const container = L.DomUtil.create("div", "leaflet-bar help-control");
-  this._createButton("<i></i>", "View map tutorial", "help-button", container, tutorial.start.bind(tutorial));
+  this._createButton("<i></i>", "View tutorial", "help-button", container, tutorial.start.bind(tutorial));
   return container;
 }
 
@@ -634,6 +634,7 @@ helpButton.onAdd = function(map) {
 
 // topleft
 const bookmarksControl = new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
+bookmarksControl._container.setAttribute("title", "View bookmarks");
 const zoomhomeControl = L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
 helpButton.addTo(map);
 infoControl.addTo(map);
@@ -643,13 +644,11 @@ legend.addTo(map);
 dataSelectControl.addTo(map);
 graphControl.addTo(map);
 geocoderControl.addTo(map);
+L.DomEvent.disableClickPropagation(geocoderControl._container);
+L.DomEvent.disableScrollPropagation(geocoderControl._container);
 opacityControl.addTo(map);
 // bottomright
 timelineControl.addTo(map);
-
-// disable event propagation for geocoder control
-L.DomEvent.disableClickPropagation(geocoderControl._container);
-L.DomEvent.disableScrollPropagation(geocoderControl._container);
 
 initializeTutorialSteps(tutorial);
 // start the tutorial if it hasn't been seen at least once
