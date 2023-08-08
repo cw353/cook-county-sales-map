@@ -94,9 +94,16 @@ function getChoroplethProps(layer, data, getValue, options = null) {
     mode: 'q', steps: 10, scale: 'viridis'
   }, options);
   const values = [];
-  layer.eachLayer(function (sublayer) {
-    values.push(getValue(sublayer.feature.properties, data));
+  layer.eachLayer(function(sublayer) {
+    const val = getValue(sublayer.feature.properties, data);
+    if (!isNaN(val)) {
+      values.push(val);
+    }
   });
+  // if there are no values, return empty lists for both limits and colors
+  if (values.length === 0) {
+    return [[],[]];
+  }
   // get opts.steps limits and opts.steps-1 colors from chroma
   // (truncate limits under the assumption that all data has been rounded to the nearest integer to simplify interpretation)
   const chromaLimits = chroma.limits(values, opts.mode, opts.steps).map((limit) => Math.trunc(limit));
