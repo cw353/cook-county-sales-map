@@ -110,8 +110,10 @@ function getChoroplethProps(layer, data, getValue, options = null) {
   const chromaColors = chroma.scale(opts.scale).colors(chromaLimits.length - 1);
   // keep only non-duplicated limits (and their corresponding colors)
   // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+  // (except in the case where there is exactly one limit, in which case any value less than or equal
+  // to limits[0] receives the color colors[0])
   const limits = [chromaLimits[0]];
-  const colors = [];
+  const colors = limits.length === 1 ? [chromaColors[0]] : [];
   for (let i = 0; i < chromaLimits.length - 1; i++) {
     if (chromaLimits[i + 1] !== limits[limits.length - 1]) {
       limits.push(chromaLimits[i + 1]);
@@ -163,14 +165,21 @@ function updateChoropleth() {
   // TODO: add caching for limits and colors?
   [state._limits, state._colors] = getChoroplethProps(state.layer, state.choroplethData, getFeatureValue);
   // update fill colors on map
-  state.layer.setStyle(function (feature) {
+  state.layer.setStyle(function(feature) {
     const val = getFeatureValue(feature.properties, state.choroplethData);
     let fillColor = null;
     if (val != null && !isNaN(val)) {
-      for (let i = 0; i < state._limits.length - 1; i++) {
-        if (val <= state._limits[i + 1]) {
-          fillColor = state._colors[i];
-          break;
+      // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+      // (except in the case where there is exactly one limit, in which case any value less than or equal
+      // to limits[0] receives the color colors[0])
+      if (state._limits.length === 1 && val <= state._limits[0]) {
+        fillColor = state._colors[0];
+      } else {
+        for (let i = 0; i < state._limits.length - 1; i++) {
+          if (val <= state._limits[i+1]) {
+            fillColor = state._colors[i];
+            break;
+          }
         }
       }
     }
@@ -397,9 +406,9 @@ const updateLegend = function () {
   const labels = ["unknown"];
   for (let i = 0; i < state._colors.length; i++) {
     const lower_limit = i === 0 ? state._limits[i] : state._limits[i] + 1;
-    const upper_limit = state._limits[i + 1];
+    const upper_limit = i+1 < state._limits.length ? state._limits[i+1] : NaN;
     let label = state._statProps.display(lower_limit);
-    if (upper_limit !== lower_limit) {
+    if (!isNaN(upper_limit) && upper_limit !== lower_limit) {
       label += " &ndash; " + state._statProps.display(upper_limit);
     }
     labels.push(label);
