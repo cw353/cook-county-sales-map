@@ -104,26 +104,20 @@ function getChoroplethProps(layer, data, getValue, options = null) {
   if (values.length === 0) {
     return [[],[]];
   }
-  // get opts.steps limits and opts.steps-1 colors from chroma
+  // get opts.steps limits from chroma
   // (truncate limits under the assumption that all data has been rounded to the nearest integer to simplify interpretation)
   const chromaLimits = chroma.limits(values, opts.mode, opts.steps).map((limit) => Math.trunc(limit));
-  const chromaColors = chroma.scale(opts.scale).colors(chromaLimits.length - 1);
-  // keep only non-duplicated limits (and their corresponding colors)
-  // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
-  // (except in the case where there is exactly one limit, in which case any value less than or equal
-  // to limits[0] receives the color colors[0])
+  // keep only non-duplicated limits
   const limits = [chromaLimits[0]];
-  const colors = [];
   for (let i = 0; i < chromaLimits.length - 1; i++) {
     if (chromaLimits[i + 1] !== limits[limits.length - 1]) {
       limits.push(chromaLimits[i + 1]);
-      colors.push(chromaColors[i]);
     }
   }
-  // if there is only one limit, keep a single color
-  if (limits.length === 1) {
-    colors.push(chromaColors[0]);
-  }
+  // if a value is less than or equal to limits[i+1], it should receive the color colors[i]
+  // (except in the case where there is exactly one limit, in which case any value less than or equal
+  // to limits[0] receives the color colors[0])
+  const colors = chroma.scale(opts.scale).colors(limits.length === 1 ? 1 : limits.length-1);
   return [limits, colors];
 }
 
