@@ -261,10 +261,9 @@ state.layer = L.geoJSON(
     style: Object.assign({ opacity: state.opacity, fillOpacity: state.opacity }, defaultStyle),
   }
 ).addTo(map);
-let sampleFeature = null;
 state.layer.eachLayer(function (sublayer) {
   if (sublayer.feature.properties.nbhd_code === '10021') {
-    sampleFeature = sublayer._path;
+    sublayer._path.setAttribute("id", "sample-assessor-nbhd");
   }
   sublayer.on({
     click: function (e) {
@@ -394,8 +393,8 @@ dataSelectControl.onAdd = function (map) {
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
 const legend = L.control.collapsible({
   position: "bottomleft",
-  containerId: "legend",
-  className: "legend",
+  containerId: "legend-control",
+  className: "legend-control",
 });
 // precondition: colors.length === labels.length
 legend.update = function (colors, labels, title = "Legend") {
@@ -662,33 +661,33 @@ tutorial.addSteps([
     intro: "<p>Move around on the map by clicking and dragging or by using the arrow keys on your keyboard."
   },
   {
-    element: zoomhomeControl._zoomInButton,
+    element: document.querySelector(".leaflet-control-zoomhome-in"),
     intro: "<p>Click this button to zoom in on the map.</p>",
   },
   {
-    element: zoomhomeControl._zoomOutButton,
+    element: document.querySelector(".leaflet-control-zoomhome-out"),
     intro: "<p>Click this button to zoom out on the map.</p>",
   },
   {
     intro: "<p>You can also zoom in and out by scrolling up and down or by double-clicking the map."
   },
   {
-    element: zoomhomeControl._zoomHomeButton,
+    element: document.querySelector(".leaflet-control-zoomhome-home"),
     intro: "<p>Click this button to zoom to the map's default view.</p>" +
       "<p>This can be a handy way to quickly zoom out and view all areas on the map at once.</p>",
   },
   {
-    element: bookmarksControl._container,
+    element: document.querySelector(".leaflet-bookmarks-control"),
     intro: "<p>Click this button to add, view, and edit bookmarks. Bookmarks are a handy way to mark spots on the map.</p>" +
       "<p>Your bookmarks will be saved when you exit this page and restored when you visit it again.</p>"
   },
   {
-    element: sampleFeature,
+    element: document.querySelector("#sample-assessor-nbhd"),
     intro: "<p>The map is divided into areas like this one that are called <b>assessor neighborhoods</b>." +
       "<p>Assessor neighborhoods are numbered geographical regions that the Cook County Assessor's Office uses for record-keeping and analysis. (Note that these areas don't necessarily correspond to named neighborhoods in Cook County.)</p>",
   },
   {
-    element: dataSelectControl._container,
+    element: document.querySelector("#data-select-control"),
     intro: "<p>You can change which data is being shown on the map by using these dropdown menus.</p>"
   },
   {
@@ -706,19 +705,19 @@ tutorial.addSteps([
     intro: "<p>Use this dropdown menu to <b>select an assessor neighborhood</b>. The selected area will be highlighted on the map.</p>"
   },
   {
-    element: sampleFeature,
+    element: document.querySelector("#sample-assessor-nbhd"),
     intro: "<p>You can also select an assessor neighborhood by clicking on it.</p>"
   },
   {
-    element: sampleFeature,
+    element: document.querySelector("#sample-assessor-nbhd"),
     intro: "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"
   },
   {
-    element: infoControl._container,
+    element: document.querySelector("#info-control"),
     intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>"
   },
   {
-    element: infoControl._container,
+    element: document.querySelector("#info-control"),
     intro: "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
   },
   {
@@ -730,7 +729,7 @@ tutorial.addSteps([
     intro: "<p>You can also find a link to the original data from which the summary statistics were derived.</p>"
   },
   {
-    element: legend._container,
+    element: document.querySelector("#legend-control"),
     intro: "<p>The legend for the map is shown here.</p>" +
       "<p>(The intervals are determined using the quantile classification method.)</p>"
   },
