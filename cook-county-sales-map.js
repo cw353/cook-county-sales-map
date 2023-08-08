@@ -115,8 +115,15 @@ function getChoroplethProps(layer, data, getValue, options = null) {
 }
 
 const propertyClasses = {
+  0: { name: "Major Class 0", desc: "Exempt and Railroad" },
+  1: { name: "Major Class 1", desc: "Vacant" },
   2: { name: "Major Class 2", desc: "Residential" },
   3: { name: "Major Class 3", desc: "Multi-Family" },
+  4: { name: "Major Class 4", desc: "Not-For-Profit" },
+  5: { name: "Major Class 5", desc: "Commercial/Industrial" },
+  6: { name: "Major Class 6", desc: "Industrial Incentive" },
+  7: { name: "Major Class 7", desc: "Commercial Incentive" },
+  8: { name: "Major Class 8", desc: "Commercial/Industrial Incentive" },
   9: { name: "Major Class 9", desc: "Class 3 Multi-Family Residential Real Estate Incentive" },
 };
 
