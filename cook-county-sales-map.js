@@ -113,12 +113,16 @@ function getChoroplethProps(layer, data, getValue, options = null) {
   // (except in the case where there is exactly one limit, in which case any value less than or equal
   // to limits[0] receives the color colors[0])
   const limits = [chromaLimits[0]];
-  const colors = limits.length === 1 ? [chromaColors[0]] : [];
+  const colors = [];
   for (let i = 0; i < chromaLimits.length - 1; i++) {
     if (chromaLimits[i + 1] !== limits[limits.length - 1]) {
       limits.push(chromaLimits[i + 1]);
       colors.push(chromaColors[i]);
     }
+  }
+  // if there is only one limit, keep a single color
+  if (limits.length === 1) {
+    colors.push(chromaColors[0]);
   }
   return [limits, colors];
 }
