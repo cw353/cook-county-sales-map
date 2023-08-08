@@ -122,7 +122,7 @@ function getChoroplethProps(layer, data, getValue, options = null) {
 }
 
 const propertyClasses = {
-  0: { name: "Major Class 0", desc: "Exempt and Railroad" },
+  0: { name: "Major Class 0", desc: "Exempt and Railroad", queryFilter: "(upper(class)='EX' OR upper(class)='RR')" },
   1: { name: "Major Class 1", desc: "Vacant" },
   2: { name: "Major Class 2", desc: "Residential" },
   3: { name: "Major Class 3", desc: "Multi-Family" },
@@ -309,7 +309,10 @@ infoControl.update = function () {
   }
   content += items.join("<br>");
   // Add link to source data
-  let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '${state.propertyClass}') AND year=${state.year}`;
+  let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=year=${state.year} AND `;
+  query += state._propertyClassProps.queryFilter != null
+    ? state._propertyClassProps.queryFilter
+    : `starts_with(class, '${state.propertyClass}')`;
   if (state.featureKey != null) {
     query += ` AND nbhd_code='${state.featureKey}'`;
   }
