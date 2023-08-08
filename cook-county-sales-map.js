@@ -431,8 +431,8 @@ const graphControl = L.control.collapsible({
 graphControl.onAdd = function(map) {
   const container = L.Control.Collapsible.prototype.onAdd.call(this, map);
   const contentDiv = this.getContentDiv();
-  for (const div of ["_scatterDiv", "_selectDiv"]) {
-    this[div] = L.DomUtil.create("div", "graph-control-subdiv", contentDiv);
+  for (const div of ["scatterdiv", "selectdiv"]) {
+    this["_" + div] = L.DomUtil.create("div", "graph-control-subdiv " + div, contentDiv);
   }
   // the main trace (trace 0) is controlled by alterations to state.featureKey
   // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
@@ -441,7 +441,7 @@ graphControl.onAdd = function(map) {
   this._initPlot();
   // add select elements to select neighborhoods for extra traces
   for (let i = 0; i < this._numExtraTraces; i++) {
-    $(this._selectDiv).append(
+    $(this._selectdiv).append(
       $("<div class='select-div'></div>").append([
         `<label class='italic' for="select-trace${i + 2}">Add ${i + 2}${i + 2 === 2 ? "nd" : i + 2 === 3 ? "rd" : "th"} neighborhood to graph:</label>`,
         $(`<select id='select-trace${i + 2}'></select>`)
@@ -492,7 +492,7 @@ graphControl._initPlot = function () {
     plot_bgcolor: 'rgba(255,255,255,0)',
     modebar: { orientation: 'v', remove: ["select2d", "lasso2d",] },
   };
-  Plotly.newPlot(this._scatterDiv,
+  Plotly.newPlot(this._scatterdiv,
     traces,
     layout,
     {
@@ -507,7 +507,7 @@ graphControl.updateTitle = function () {
   this.updateHeaderText(`Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods`);
 }
 graphControl._hideTrace = function (traceIndex) {
-  Plotly.update(this._scatterDiv, { visible: false, }, {}, [traceIndex]);
+  Plotly.update(this._scatterdiv, { visible: false, }, {}, [traceIndex]);
 }
 graphControl._updateTrace = function (nbhd, traceIndex) {
   const data = nbhd === "All Assessor Neighborhoods" ? state.summaryData : state.choroplethData[nbhd];
@@ -537,7 +537,7 @@ graphControl._updateTrace = function (nbhd, traceIndex) {
     'yaxis.title.text': ylabel.toUpperCase(),
     'title.text': `Yearly Trend in ${ylabel}`,
   };
-  Plotly.update(this._scatterDiv, dataProps, layoutProps, [traceIndex]);
+  Plotly.update(this._scatterdiv, dataProps, layoutProps, [traceIndex]);
 }
 graphControl.updateMainTrace = function () {
   this._updateTrace(state.featureKey == null ? "All Assessor Neighborhoods" : state.featureKey, 0);
@@ -668,21 +668,22 @@ tutorial.addSteps([
   },
   {
     element: document.querySelector('#select-class-div'),
-    intro: "<p>Every property in Cook County belongs to a <b>property class</b> that describes what type of property it is. For example, a property belonging to Major Class 1 is vacant, while a property belonging to Major Class 3 is a multi-family residential property.</p>" +
-    "<p>Use this dropdown menu to <b>select the property class</b> to show on the map. (See <a class='external' href='https://www.cookcountyassessor.com/form-document/codes-classification-property'>this link</a> for more information about property classes.)</p>"
+    intro: "<p>Use this dropdown menu to <b>select the property class</b> to show on the map.</p>" +
+      "<p>(Every property in Cook County belongs to a <b>property class</b> that describes what type of property it is. See <a class='external' href='https://www.cookcountyassessor.com/form-document/codes-classification-property'>this link</a> for more information.)</p>"
   },
   {
     element: document.querySelector('#select-stat-div'),
-    intro: "<p>This map shows a variety of useful <b>summary statistics</b> about property sales.</p>" +
-    "<p>Use this dropdown menu to <b>select the statistic</b> to show on the map. The colors of the assessor neighborhoods will change based on the values of this statistic.</p>"
+    intro: "<p>Use this dropdown menu to <b>select the statistic</b> to show on the map.</p>" +
+      "<p>The <b>colors</b> of the assessor neighborhoods will change based on the values of this statistic.</p>"
   },
   {
     element: document.querySelector('#select-nbhd-div'),
-    intro: "<p>Use this dropdown menu to <b>select an assessor neighborhood</b>. The selected area will be highlighted on the map.</p>"
+    intro: "<p>Use this dropdown menu to <b>select an assessor neighborhood</b>. The selected area will be highlighted on the map.</p>" +
+      "<p>To view an <b>overall summary of all neighborhoods</b>, select the option \"All Assessor Neighborhoods\".</p>"
   },
   {
     element: document.querySelector("#sample-assessor-nbhd"),
-    intro: "<p>You can also select an assessor neighborhood by clicking on it.</p>"
+    intro: "<p>You can also <b>select an assessor neighborhood</b> by clicking on it.</p>"
   },
   {
     element: document.querySelector("#sample-assessor-nbhd"),
@@ -694,7 +695,7 @@ tutorial.addSteps([
   },
   {
     element: document.querySelector("#info-control"),
-    intro: "<p>If no neighborhood is selected, then information about <b>all assessor neighborhoods</b> will be shown instead.</p>"
+    intro: "<p>If no neighborhood is selected, then an <b>overall summary of all assessor neighborhoods</b> will be shown instead.</p>"
   },
   {
     element: document.querySelector('#info-control-meta'),
@@ -705,9 +706,39 @@ tutorial.addSteps([
     intro: "<p>You can also find a link to the original data from which the summary statistics were derived.</p>"
   },
   {
-    element: document.querySelector("#legend-control"),
-    intro: "<p>The <b>legend</b> for the map is shown here.</p>" +
-      "<p>(The intervals are determined using the quantile classification method.)</p>"
+    element: document.querySelector('#graph-control'),
+    intro: "<p>This graph plots the <b>yearly trends</b> in the selected data."
+  },
+  {
+    element: document.querySelector('#graph-control .plot'),
+    intro: "<p>Hover over points on the line(s) to see details.<b></p>"
+  },
+  {
+    element: document.querySelector('#graph-control .plot'),
+    intro: "<p>The <b>blue line</b> plots data for the <b>selected assessor neighborhood.<b></p>"
+  },
+  {
+    element: document.querySelector('#graph-control .plot'),
+    intro: "<p>If no neighborhood is selected, then the blue line will plot <b>an overall summary of all assessor neighborhoods</b> instead.</p>"
+  },
+  {
+    element: document.querySelector('#graph-control .selectdiv'),
+    intro: "<p>You can <b>add extra lines representing other assessor neighborhoods</b> to the graph by using these dropdown menus.</p>" +
+      "<p>This could be useful for comparing trends in one neighborhood to trends in another neighborhood, or to the overall trend in Cook County.</p>"
+  },
+  {
+    element: document.querySelector('#graph-control .selectdiv'),
+    intro: "<p>To plot an <b>overall summary of all neighborhoods</b>, select the option \"All Assessor Neighborhoods\".</p>" +
+      "<p>To <b>remove an extra line</b> from the graph entirely, select the option \"None\".</p>"
+  },
+  {
+    element: document.querySelector('#graph-control .legend'),
+    intro: "<p>The <b>legend</b> for the graph is shown here.</p>" +
+      "<p>Click on a line's label to hide or show that line. Double-click the label to hide all other lines on the graph.</p>"
+  },
+  {
+    element: document.querySelector('#graph-control .modebar'),
+    intro: "<p>Use the controls in this <b>toolbar</b> to zoom in or out, pan the view, change the scale, and save the plot as an image.</p>"
   },
   {
     element: document.querySelector(".leaflet-control-geocoder"),
@@ -718,6 +749,11 @@ tutorial.addSteps([
     element: document.querySelector(".leaflet-control-layers"),
     intro: "<p>Use this slider to adjust the <b>opacity</b> of the colors on the map.</p>" +
       "<p>You can make the colors more opaque if they're too hard to see, or more transparent if they're too hard to see through.</p>"
+  },
+  {
+    element: document.querySelector("#legend-control"),
+    intro: "<p>The <b>legend</b> for the colors on the map is shown here.</p>" +
+      "<p>(The intervals are determined using the quantile classification method.)</p>"
   },
   {
     intro: "<p><b>Move around</b> on the map by clicking and dragging or by using the arrow keys on your keyboard."
