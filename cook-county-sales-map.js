@@ -294,12 +294,6 @@ infoControl.update = function () {
   let content = "";
   // Add header
   this.updateHeaderText(state.featureKey == null ? "Summary of<br>All Assessor Neighborhoods" : `Details for<br>Assessor Neighborhood ${state.featureKey}`);
-  // Add info about how to toggle view between summary of all areas and details of specific area
-  if (state.featureKey == null) {
-    content += "<p class='italic'>Click on an area to see details.</p>";
-  } else {
-    content += "<p class='italic'>Click on this area again to deselect it (or click elsewhere on the map).</p>"
-  }
   // Add data items
   const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
   const items = [
