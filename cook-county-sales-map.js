@@ -295,7 +295,7 @@ infoControl.update = function () {
   if (state.featureKey == null) {
     content += "<p class='italic'>Click on an area to see details.</p>";
   } else {
-    content += "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
+    content += "<p class='italic'>Click on this area again to deselect it (or click elsewhere on the map).</p>"
   }
   // Add data items
   const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
