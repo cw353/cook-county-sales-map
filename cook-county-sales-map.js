@@ -314,7 +314,7 @@ infoControl.update = function () {
     query += ` AND nbhd_code='${state.featureKey}'`;
   }
   query += "&$limit=1000000000";
-  content += `<p><a class='external' href="${query}">View source data</a></p>`;
+  content += `<p class='italic'>Data was last updated on ${update_date}. View original data <a class='external' href="${query}">here.</a></p>`;
   this.updateContent(content);
 };
 for (const prop of ["propertyClass", "featureKey", "year", "stat"]) {

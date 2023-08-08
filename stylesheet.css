@@ -86,6 +86,7 @@ label {
 .info-control p {
   text-align: center;
   margin: 8px;
+  word-break: break-word;
 }
 
 .legend .contents {
@@ -139,6 +140,7 @@ label {
 }
 
 .info-control .contents {
+  max-width: 22vw;
   max-height: 25vh;
 }
 
