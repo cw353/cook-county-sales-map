@@ -47,7 +47,7 @@ label {
 }
 
 #map .bookmarks-list {
-  max-height: 95px;
+  max-height: 140px;
   overflow-y: scroll;
 }
 
@@ -86,14 +86,15 @@ label {
 .info-control p {
   text-align: center;
   margin: 8px;
+  word-break: break-word;
 }
 
-.legend .contents {
+.legend-control .contents {
   line-height: 18px;
   color: #555;
 }
 
-.legend i {
+.legend-control i {
   width: 18px;
   height: 18px;
   float: left;
@@ -103,12 +104,12 @@ label {
   border-right: 1px solid black;
 }
 
-.legend i:first-of-type {
+.legend-control i:first-of-type {
   height: 17px;
   border-top: 1px solid black;
 }
 
-.legend i:last-of-type {
+.legend-control i:last-of-type {
   height: 17px;
   border-bottom: 1px solid black;
 }
@@ -134,15 +135,21 @@ label {
   top: 30px;
 }
 
+.help-button {
+  /* Source: Wikimedia Commons, https://commons.wikimedia.org/wiki/File:OOjs_UI_icon_helpNotice-ltr-progressive.svg (MIT) */
+  background-image: url("https://upload.wikimedia.org/wikipedia/commons/1/12/OOjs_UI_icon_helpNotice-ltr-progressive.svg")
+}
+
 .collapsible-control .contents {
   overflow-y: scroll;
 }
 
 .info-control .contents {
-  max-height: 25vh;
+  max-width: 22vw;
+  max-height: 22vh;
 }
 
-.legend .contents {
+.legend-control .contents {
   max-height: 30vh;
 }
 

@@ -122,7 +122,7 @@ function getChoroplethProps(layer, data, getValue, options = null) {
 }
 
 const propertyClasses = {
-  0: { name: "Major Class 0", desc: "Exempt and Railroad" },
+  0: { name: "Major Class 0", desc: "Exempt and Railroad", queryFilter: "(upper(class)='EX' OR upper(class)='RR')" },
   1: { name: "Major Class 1", desc: "Vacant" },
   2: { name: "Major Class 2", desc: "Residential" },
   3: { name: "Major Class 3", desc: "Multi-Family" },
@@ -262,6 +262,9 @@ state.layer = L.geoJSON(
   }
 ).addTo(map);
 state.layer.eachLayer(function (sublayer) {
+  if (sublayer.feature.properties.nbhd_code === '10021') {
+    sublayer._path.setAttribute("id", "sample-assessor-nbhd");
+  }
   sublayer.on({
     click: function (e) {
       // stop event propagation so that clicks on this layer will not be handled
@@ -291,12 +294,6 @@ infoControl.update = function () {
   let content = "";
   // Add header
   this.updateHeaderText(state.featureKey == null ? "Summary of<br>All Assessor Neighborhoods" : `Details for<br>Assessor Neighborhood ${state.featureKey}`);
-  // Add info about how to toggle view between summary of all areas and details of specific area
-  if (state.featureKey == null) {
-    content += "<p class='italic'>Click on an area to see details.</p>";
-  } else {
-    content += "<p class='italic'>Click on this area again to deselect it<br>(or click elsewhere on the map).</p>"
-  }
   // Add data items
   const data = state.featureKey == null ? state.summaryData : state.choroplethData[state.featureKey];
   const items = [
@@ -309,12 +306,15 @@ infoControl.update = function () {
   }
   content += items.join("<br>");
   // Add link to source data
-  let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=starts_with(class, '${state.propertyClass}') AND year=${state.year}`;
+  let query = `https://datacatalog.cookcountyil.gov/resource/wvhk-k5uv.json?$where=year=${state.year} AND `;
+  query += state._propertyClassProps.queryFilter != null
+    ? state._propertyClassProps.queryFilter
+    : `starts_with(class, '${state.propertyClass}')`;
   if (state.featureKey != null) {
     query += ` AND nbhd_code='${state.featureKey}'`;
   }
   query += "&$limit=1000000000";
-  content += `<p><a class='external' href="${query}">View source data</a></p>`;
+  content += `<p id='info-control-meta' class='italic'>Data was last updated on ${update_date}. View original data <a class='external' href="${query}">here.</a></p>`;
   this.updateContent(content);
 };
 for (const prop of ["propertyClass", "featureKey", "year", "stat"]) {
@@ -343,6 +343,14 @@ dataSelectControl.onAdd = function (map) {
     .on("change", function (e) {
       updateState("propertyClass", e.target.value);
     });
+  const selectStat = $("<select id='select-stat'></select>")
+    .html(Object.entries(saleStats).map(function ([stat, statProps]) {
+      return `<option value="${stat}">${statProps.getLabel()}</option>`;
+    }))
+    .val(state.stat)
+    .on("change", function (e) {
+      updateState("stat", e.target.value);
+    });
   const selectNbhd = $("<select id='select-nbhd'></select>")
     .html([
       "<option>All Assessor Neighborhoods</option>",
@@ -359,26 +367,18 @@ dataSelectControl.onAdd = function (map) {
       selectNbhd.val(newVal);
     }
   });
-  const selectStat = $("<select id='select-stat'></select>")
-    .html(Object.entries(saleStats).map(function ([stat, statProps]) {
-      return `<option value="${stat}">${statProps.getLabel()}</option>`;
-    }))
-    .val(state.stat)
-    .on("change", function (e) {
-      updateState("stat", e.target.value);
-    });
   $(this.getContentDiv()).append([
-    $("<div class='select-div'></div>").append([
-      `<label for="select-stat">Select Property Class:</label>`,
+    $("<div id='select-class-div' class='select-div'></div>").append([
+      `<label for="select-class">Select Property Class:</label>`,
       selectClass,
     ]),
-    $("<div class='select-div'></div>").append([
-      `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
-      selectNbhd,
-    ]),
-    $("<div class='select-div'></div>").append([
+    $("<div id='select-stat-div' class='select-div'></div>").append([
       `<label for="select-stat">Select Statistic:</label>`,
       selectStat,
+    ]),
+    $("<div id='select-nbhd-div' class='select-div'></div>").append([
+      `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
+      selectNbhd,
     ]),
   ]);
   return container;
@@ -387,8 +387,8 @@ dataSelectControl.onAdd = function (map) {
 /* Portions of this control are based on https://leafletjs.com/examples/choropleth/ (BSD 2-Clause "Simplified" License) */
 const legend = L.control.collapsible({
   position: "bottomleft",
-  containerId: "legend",
-  className: "legend",
+  containerId: "legend-control",
+  className: "legend-control",
 });
 // precondition: colors.length === labels.length
 legend.update = function (colors, labels, title = "Legend") {
@@ -425,8 +425,8 @@ const graphControl = L.control.collapsible({
 graphControl.onAdd = function(map) {
   const container = L.Control.Collapsible.prototype.onAdd.call(this, map);
   const contentDiv = this.getContentDiv();
-  for (const div of ["_scatterDiv", "_selectDiv"]) {
-    this[div] = L.DomUtil.create("div", "graph-control-subdiv", contentDiv);
+  for (const div of ["scatterdiv", "selectdiv"]) {
+    this["_" + div] = L.DomUtil.create("div", "graph-control-subdiv " + div, contentDiv);
   }
   // the main trace (trace 0) is controlled by alterations to state.featureKey
   // the extra traces (traces 1 through this._numExtraTraces-1) are controlled by select elements
@@ -435,7 +435,7 @@ graphControl.onAdd = function(map) {
   this._initPlot();
   // add select elements to select neighborhoods for extra traces
   for (let i = 0; i < this._numExtraTraces; i++) {
-    $(this._selectDiv).append(
+    $(this._selectdiv).append(
       $("<div class='select-div'></div>").append([
         `<label class='italic' for="select-trace${i + 2}">Add ${i + 2}${i + 2 === 2 ? "nd" : i + 2 === 3 ? "rd" : "th"} neighborhood to graph:</label>`,
         $(`<select id='select-trace${i + 2}'></select>`)
@@ -486,7 +486,7 @@ graphControl._initPlot = function () {
     plot_bgcolor: 'rgba(255,255,255,0)',
     modebar: { orientation: 'v', remove: ["select2d", "lasso2d",] },
   };
-  Plotly.newPlot(this._scatterDiv,
+  Plotly.newPlot(this._scatterdiv,
     traces,
     layout,
     {
@@ -501,7 +501,7 @@ graphControl.updateTitle = function () {
   this.updateHeaderText(`Trends in Major Class ${state.propertyClass} Property Sales<br>for Cook County Assessor Neighborhoods`);
 }
 graphControl._hideTrace = function (traceIndex) {
-  Plotly.update(this._scatterDiv, { visible: false, }, {}, [traceIndex]);
+  Plotly.update(this._scatterdiv, { visible: false, }, {}, [traceIndex]);
 }
 graphControl._updateTrace = function (nbhd, traceIndex) {
   const data = nbhd === "All Assessor Neighborhoods" ? state.summaryData : state.choroplethData[nbhd];
@@ -531,7 +531,7 @@ graphControl._updateTrace = function (nbhd, traceIndex) {
     'yaxis.title.text': ylabel.toUpperCase(),
     'title.text': `Yearly Trend in ${ylabel}`,
   };
-  Plotly.update(this._scatterDiv, dataProps, layoutProps, [traceIndex]);
+  Plotly.update(this._scatterdiv, dataProps, layoutProps, [traceIndex]);
 }
 graphControl.updateMainTrace = function () {
   this._updateTrace(state.featureKey == null ? "All Assessor Neighborhoods" : state.featureKey, 0);
@@ -587,12 +587,50 @@ const geocoderControl = L.Control.geocoder({
   }
 });
 
+const tutorial = introJs()
+  .setOptions({
+    prevLabel: "Previous",
+    exitOnEsc: false,
+    exitOnOverlayClick: false,
+    showStepNumbers: true,
+    showProgress: true,
+  })
+  .onexit(function() {
+    if (!localStorage.getItem("cook-county-sales-map-tutorial-finished")) {
+      localStorage.setItem("cook-county-sales-map-tutorial-finished", true);
+    }
+  });
+
+const helpButton = L.control({position: "topleft"});
+// This function is adapted from https://github.com/Leaflet/Leaflet/blob/main/src/control/Control.Zoom.js (BSD 2-Clause "Simplified" License)
+helpButton._createButton = function(html, title, className, container, fn) {
+  const link = L.DomUtil.create('a', className, container);
+  link.innerHTML = html;
+  link.href = '#';
+  link.title = title;
+  // Will force screen readers like VoiceOver to read this as "Zoom in - button"
+  link.setAttribute('role', 'button');
+  link.setAttribute('aria-label', title);
+  L.DomEvent.disableClickPropagation(link);
+  L.DomEvent.on(link, 'click', L.DomEvent.stop);
+  L.DomEvent.on(link, 'click', fn, this);
+  L.DomEvent.on(link, 'click', this._refocusOnMap, this);
+  return link;
+}
+helpButton.onAdd = function(map) {
+  const container = L.DomUtil.create("div", "leaflet-bar help-control");
+  this._createButton("<i></i>", "View tutorial", "help-button", container, tutorial.start.bind(tutorial));
+  return container;
+}
+
 // add controls in order
 // note that adding timelineSlider sets state.year to state.years[0] and thus initializes the rest of the map
 
 // topleft
-new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
-L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
+const bookmarksControl = new L.Control.Bookmarks({ position: "topleft" }).addTo(map);
+bookmarksControl._container.setAttribute("title", "View bookmarks");
+const zoomhomeControl = L.Control.zoomHome({ position: "topleft", zoomHomeTitle: "Zoom to default view" }).addTo(map);
+helpButton.addTo(map);
 infoControl.addTo(map);
 // bottomleft
 legend.addTo(map);
@@ -600,10 +638,14 @@ legend.addTo(map);
 dataSelectControl.addTo(map);
 graphControl.addTo(map);
 geocoderControl.addTo(map);
+L.DomEvent.disableClickPropagation(geocoderControl._container);
+L.DomEvent.disableScrollPropagation(geocoderControl._container);
 opacityControl.addTo(map);
 // bottomright
 timelineControl.addTo(map);
 
-// disable event propagation for geocoder control
-L.DomEvent.disableClickPropagation(geocoderControl._container);
-L.DomEvent.disableScrollPropagation(geocoderControl._container);
+initializeTutorialSteps(tutorial);
+// start the tutorial if it hasn't been seen at least once
+if (!localStorage.getItem("cook-county-sales-map-tutorial-finished")) {
+  tutorial.start();
+}
