@@ -658,41 +658,17 @@ tutorial.addSteps([
       "</p><p>Follow this tutorial to learn how to use the map.</p>"
   },
   {
-    intro: "<p>Move around on the map by clicking and dragging or by using the arrow keys on your keyboard."
-  },
-  {
-    element: document.querySelector(".leaflet-control-zoomhome-in"),
-    intro: "<p>Click this button to zoom in on the map.</p>",
-  },
-  {
-    element: document.querySelector(".leaflet-control-zoomhome-out"),
-    intro: "<p>Click this button to zoom out on the map.</p>",
-  },
-  {
-    intro: "<p>You can also zoom in and out by scrolling up and down or by double-clicking the map."
-  },
-  {
-    element: document.querySelector(".leaflet-control-zoomhome-home"),
-    intro: "<p>Click this button to zoom to the map's default view.</p>" +
-      "<p>This can be a handy way to quickly zoom out and view all areas on the map at once.</p>",
-  },
-  {
-    element: document.querySelector(".leaflet-bookmarks-control"),
-    intro: "<p>Click this button to add, view, and edit bookmarks. Bookmarks are a handy way to mark spots on the map.</p>" +
-      "<p>Your bookmarks will be saved when you exit this page and restored when you visit it again.</p>"
-  },
-  {
     element: document.querySelector("#sample-assessor-nbhd"),
     intro: "<p>The map is divided into areas like this one that are called <b>assessor neighborhoods</b>." +
       "<p>Assessor neighborhoods are numbered geographical regions that the Cook County Assessor's Office uses for record-keeping and analysis. (Note that these areas don't necessarily correspond to named neighborhoods in Cook County.)</p>",
   },
   {
-    element: document.querySelector("#data-select-control"),
-    intro: "<p>You can change which data is being shown on the map by using these dropdown menus.</p>"
+    element: document.querySelector('.control_container'),
+    intro: "<p>Use this slider to <b>select the year</b> for which to view sales data.</p>"
   },
   {
     element: document.querySelector('#select-class-div'),
-    intro: "<p>Every property belongs to a <b>property class</b> that describes what type of property it is. For example, a property belonging to Major Class 1 is vacant, while a property belonging to Major Class 3 is a multi-family residential property.</p>" +
+    intro: "<p>Every property in Cook County belongs to a <b>property class</b> that describes what type of property it is. For example, a property belonging to Major Class 1 is vacant, while a property belonging to Major Class 3 is a multi-family residential property.</p>" +
     "<p>Use this dropdown menu to <b>select the property class</b> to show on the map. (See <a class='external' href='https://www.cookcountyassessor.com/form-document/codes-classification-property'>this link</a> for more information about property classes.)</p>"
   },
   {
@@ -722,7 +698,7 @@ tutorial.addSteps([
   },
   {
     element: document.querySelector('#info-control-meta'),
-    intro: "<p>You can find out when the data on this map was last updated by looking here.</p>"
+    intro: "<p>You can find out when the data on this map was <b>last updated</b> by looking here.</p>"
   },
   {
     element: document.querySelector('#info-control-meta'),
@@ -730,8 +706,42 @@ tutorial.addSteps([
   },
   {
     element: document.querySelector("#legend-control"),
-    intro: "<p>The legend for the map is shown here.</p>" +
+    intro: "<p>The <b>legend</b> for the map is shown here.</p>" +
       "<p>(The intervals are determined using the quantile classification method.)</p>"
+  },
+  {
+    element: document.querySelector(".leaflet-control-geocoder"),
+    intro: "<p>Use this search bar to <b>search for locations</b> on the map.</p>" +
+      "<p>The search bar will give you a list of locations based on your query. Click on the one you want, and the map will zoom to show that location.</p>"
+  },
+  {
+    element: document.querySelector(".leaflet-control-layers"),
+    intro: "<p>Use this slider to adjust the <b>opacity</b> of the colors on the map.</p>" +
+      "<p>You can make the colors more opaque if they're too hard to see, or more transparent if they're too hard to see through.</p>"
+  },
+  {
+    intro: "<p><b>Move around</b> on the map by clicking and dragging or by using the arrow keys on your keyboard."
+  },
+  {
+    element: document.querySelector(".leaflet-control-zoomhome-in"),
+    intro: "<p>Click this button to <b>zoom in</b> on the map.</p>",
+  },
+  {
+    element: document.querySelector(".leaflet-control-zoomhome-out"),
+    intro: "<p>Click this button to <b>zoom out</b> on the map.</p>",
+  },
+  {
+    intro: "<p>You can also <b>zoom in and out</b> by scrolling up and down or by double-clicking the map."
+  },
+  {
+    element: document.querySelector(".leaflet-control-zoomhome-home"),
+    intro: "<p>Click this button to zoom to the map's <b>default view</b>.</p>" +
+      "<p>This can be a handy way to quickly zoom to view all areas on the map at once.</p>",
+  },
+  {
+    element: document.querySelector(".leaflet-bookmarks-control"),
+    intro: "<p>Click this button to add, view, and edit <b>bookmarks</b>. Bookmarks are a handy way to mark spots on the map.</p>" +
+      "<p>Your bookmarks will be saved when you exit this page and restored when you visit it again.</p>"
   },
 ]);
 
