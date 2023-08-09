@@ -25,17 +25,8 @@ function initializeTutorialSteps(tutorial) {
       intro: "<p><b>Move around</b> on the map by clicking and dragging or by using the arrow keys on your keyboard."
     },
     {
-      element: document.querySelector(".leaflet-control-zoomhome-in"),
-      intro: "<p>Click this button to <b>zoom in</b> on the map.</p>",
-    },
-    {
-      element: document.querySelector(".leaflet-control-zoomhome-out"),
-      intro: "<p>Click this button to <b>zoom out</b> on the map.</p>",
-    },
-    {
-      element: document.querySelector(".leaflet-control-zoomhome-home"),
-      intro: "<p>Click this button to zoom to the map's <b>default view</b>.</p>" +
-        "<p>This can be a handy way to quickly zoom to view all areas on the map at once.</p>",
+      element: document.querySelector(".leaflet-control-zoomhome"),
+      intro: "<p>Use these buttons to <b>zoom in</b> on the map, zoom to the map's <b>home view</b>, and <b>zoom out</b> on the map.</p>",
     },
     {
       element: document.querySelector("#sample-assessor-nbhd"),
@@ -57,56 +48,34 @@ function initializeTutorialSteps(tutorial) {
         "<p>The <b>colors of the assessor neighborhoods</b> will change based on the values of this statistic.</p>"
     },
     {
-      element: document.querySelector("#legend-control"),
-      intro: "<p>The <b>legend</b> for the colors on the map is shown here.</p>" +
-        "<p>(The intervals are determined using the quantile classification method.)</p>"
-    },
-    {
       element: document.querySelector('#select-nbhd-div'),
       intro: "<p>Use this dropdown menu to <b>select an assessor neighborhood</b> for which to view sales data. The selected area will be highlighted on the map.</p>" +
         "<p>To view an <b>overall summary of all neighborhoods</b>, select the option \"All Assessor Neighborhoods\".</p>"
     },
     {
       element: document.querySelector("#sample-assessor-nbhd"),
-      intro: "<p>You can also <b>select an assessor neighborhood</b> by clicking on it.</p>"
-    },
-    {
-      element: document.querySelector("#sample-assessor-nbhd"),
-      intro: "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"
+      intro: "<p>You can also <b>select an assessor neighborhood</b> by clicking on it.</p>" +
+        "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"
     },
     {
       element: document.querySelector("#info-control"),
-      intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>"
-    },
-    {
-      element: document.querySelector("#info-control"),
-      intro: "<p>If no neighborhood is selected, then an <b>overall summary of all assessor neighborhoods</b> will be shown instead.</p>"
+      intro: "<p>When you <b>select an assessor neighborhood</b>, information about it will be shown here.</p>" +
+        "<p>If no neighborhood is selected, then an <b>overall summary of all assessor neighborhoods</b> will be shown instead.</p>"
     },
     {
       element: document.querySelector('#graph-control'),
-      intro: "<p>This graph plots the <b>yearly trends</b> in the selected data."
+      intro: "<p>This graph plots the <b>yearly trends</b> in the selected data." +
+        "<p>Hover over points on the line(s) to see details.<b></p>"
     },
     {
       element: document.querySelector('#graph-control .plot'),
-      intro: "<p>Hover over points on the line(s) to see details.<b></p>"
-    },
-    {
-      element: document.querySelector('#graph-control .plot'),
-      intro: "<p>The <b>blue line</b> plots data for the <b>selected assessor neighborhood.<b></p>"
-    },
-    {
-      element: document.querySelector('#graph-control .plot'),
-      intro: "<p>If no neighborhood is selected, then the blue line will plot <b>an overall summary of all assessor neighborhoods</b> instead.</p>"
+      intro: "<p>The <b>blue line</b> plots data for the <b>selected assessor neighborhood.</b></p>" +
+        "<p>If no neighborhood is selected, then the blue line will plot <b>an overall summary of all assessor neighborhoods</b> instead.</p>"
     },
     {
       element: document.querySelector('#graph-control .selectdiv'),
       intro: "<p>You can <b>add extra lines representing other assessor neighborhoods</b> to the graph by using these dropdown menus.</p>" +
         "<p>This feature can be used to compare trends in one neighborhood to trends in another neighborhood, or to the overall trend in Cook County.</p>"
-    },
-    {
-      element: document.querySelector('#graph-control .selectdiv'),
-      intro: "<p>To <b>plot an overall summary of all neighborhoods as an extra line</b>, select the option \"All Assessor Neighborhoods\".</p>" +
-        "<p>To <b>remove an extra line</b> from the graph entirely, select the option \"None\".</p>"
     },
     {
       element: document.querySelector('#graph-control .legend'),
@@ -118,19 +87,23 @@ function initializeTutorialSteps(tutorial) {
       intro: "<p>Use the controls in this toolbar to zoom in or out, pan the view, change the scale, and save the plot as an image.</p>"
     },
     {
-      element: document.querySelector(".leaflet-control-layers"),
-      intro: "<p>Use this slider to adjust the <b>opacity</b> of the colors on the map.</p>" +
-        "<p>You can make the colors more opaque if they're too hard to see, or more transparent if they're too hard to see through.</p>"
-    },
-    {
       element: document.querySelector(".leaflet-control-geocoder"),
       intro: "<p>Use this search bar to <b>search for locations</b> on the map.</p>" +
         "<p>The search bar will give you a list of locations based on your query. Click on the one you want, and the map will zoom to show that location.</p>"
     },
     {
+      element: document.querySelector(".leaflet-control-layers"),
+      intro: "<p>Use this slider to adjust the <b>opacity</b> of the colors on the map.</p>" +
+        "<p>You can make the colors more opaque if they're too hard to see, or less opaque if they're too hard to see through.</p>"
+    },
+    {
       element: document.querySelector(".leaflet-bookmarks-control"),
-      intro: "<p>Click this button to add, view, and edit <b>bookmarks</b>. Bookmarks are a handy way to mark spots on the map.</p>" +
+      intro: "<p>Click this button to add, view, and edit <b>bookmarks</b>, which are a handy way to mark spots on the map.</p>" +
         "<p>Your bookmarks will be saved when you exit this page and restored when you visit it again.</p>"
+    },
+    {
+      element: document.querySelector("#legend-control"),
+      intro: "<p>The <b>legend</b> for the colors on the map is shown here.</p>"
     },
     {
       element: document.querySelector(".help-control"),
