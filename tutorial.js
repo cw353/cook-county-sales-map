@@ -33,9 +33,6 @@ function initializeTutorialSteps(tutorial) {
       intro: "<p>Click this button to <b>zoom out</b> on the map.</p>",
     },
     {
-      intro: "<p>You can also <b>zoom in and out</b> by scrolling up and down or by double-clicking the map."
-    },
-    {
       element: document.querySelector(".leaflet-control-zoomhome-home"),
       intro: "<p>Click this button to zoom to the map's <b>default view</b>.</p>" +
         "<p>This can be a handy way to quickly zoom to view all areas on the map at once.</p>",
