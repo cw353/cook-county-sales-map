@@ -41,6 +41,10 @@ label {
   font-style: italic;
 }
 
+.collapsible-control .header {
+  cursor: pointer;
+}
+
 #map .bookmarks-container {
   margin-top: 25px;
   margin-left: 15px;
