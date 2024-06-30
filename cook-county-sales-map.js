@@ -144,9 +144,9 @@ const saleStats = {
 
 // choropleth classification schemes
 const choroSchemes = [
-  ['q', 'Quantile'],
-  ['e', 'Equidistant'],
-  ['k', 'K-Means'],
+  ['q', 'Quantiles'],
+  ['e', 'Equal Intervals'],
+  ['k', 'Natural Breaks (K-Means)'],
 ];
 
 const initialPropertyClass = "2";
