@@ -53,6 +53,11 @@ function initializeTutorialSteps(tutorial) {
         "<p>To view an <b>overall summary of all neighborhoods</b>, select the option \"All Assessor Neighborhoods\".</p>"
     },
     {
+      element: document.querySelector('#select-scheme-div'),
+      intro: "<p>Use this dropdown menu to <b>select a classification scheme</b> to use to group the sales data into classes.</p>" +
+        "<p>(Classification schemes determine how to group the data into color-coded classes. See <a class='external' href='https://storymaps.arcgis.com/stories/871fe556c40b4d40b7a465c6f135ac88'>this link</a> for more information about the pros and cons of each scheme.)</p>"
+    },
+    {
       element: document.querySelector("#sample-assessor-nbhd"),
       intro: "<p>You can also <b>select an assessor neighborhood</b> by clicking on it.</p>" +
         "<p>If you click on that same assessor neighborhood again &ndash; or if you click somewhere else on the map &ndash; it will be <b>deselected</b>.</p>"

@@ -86,12 +86,12 @@ function getFeatureValue(props, data) {
 // Get colors and limits for a choropleth map
 // PRECONDITION: all data that will be displayed on the map has been rounded to the nearest integer.
 /* Portions of this function are based on https://github.com/timwis/leaflet-choropleth (MIT License) */
-function getChoroplethProps(layer, data, getValue, options = null) {
+function getChoroplethProps(layer, data, getValue, mode, options = null) {
   // overwrite default options with provided options (if any)
   // note: opts.steps is the number of intervals that the function will aim to create,
   // but depending on the range of the data, a smaller number of intervals may be returned
   const opts = Object.assign({
-    mode: 'q', steps: 10, scale: 'viridis'
+    mode: mode, steps: 10, scale: 'viridis'
   }, options);
   const values = [];
   layer.eachLayer(function(sublayer) {
@@ -142,6 +142,13 @@ const saleStats = {
   count: new CountFeature("Number of Sales"),
 };
 
+// choropleth classification schemes
+const choroSchemes = [
+  ['q', 'Quantiles'],
+  ['e', 'Equal Intervals'],
+  ['k', 'Natural Breaks (K-Means)'],
+];
+
 const initialPropertyClass = "2";
 const initialStat = "mean";
 const state = {
@@ -158,10 +165,11 @@ const state = {
   _limits: null,
   _colors: null,
   opacity: 0.7,
+  choroScheme: 'q',
 };
 function updateChoropleth() {
   // TODO: add caching for limits and colors?
-  [state._limits, state._colors] = getChoroplethProps(state.layer, state.choroplethData, getFeatureValue);
+  [state._limits, state._colors] = getChoroplethProps(state.layer, state.choroplethData, getFeatureValue, state.choroScheme);
   // update fill colors on map
   state.layer.setStyle(function(feature) {
     const val = getFeatureValue(feature.properties, state.choroplethData);
@@ -235,7 +243,10 @@ const stateCallbacks = {
     function (val) {
       state.layer.setStyle({ opacity: val, fillOpacity: val });
     }
-  ]
+  ],
+  choroScheme: [
+    updateChoropleth
+  ],
 }
 
 // Add a callback to stateCallbacks
@@ -367,6 +378,14 @@ dataSelectControl.onAdd = function (map) {
       selectNbhd.val(newVal);
     }
   });
+  const selectScheme = $("<select id='select-scheme'></select>")
+    .html(choroSchemes.map(function ([scheme, name]) {
+      return `<option value="${scheme}">${name}</option>`;
+    }))
+    .val(state.choroScheme)
+    .on("change", function (e) {
+      updateState("choroScheme", e.target.value);
+    });
   $(this.getContentDiv()).append([
     $("<div id='select-class-div' class='select-div'></div>").append([
       `<label for="select-class">Select Property Class:</label>`,
@@ -379,6 +398,10 @@ dataSelectControl.onAdd = function (map) {
     $("<div id='select-nbhd-div' class='select-div'></div>").append([
       `<label for="select-nbhd">Select Assessor Neighborhood:</label>`,
       selectNbhd,
+    ]),
+    $("<div id='select-scheme-div' class='select-div'></div>").append([
+      `<label for="select-scheme">Select Choropleth Classification Scheme:</label>`,
+      selectScheme,
     ]),
   ]);
   return container;
@@ -413,7 +436,7 @@ const updateLegend = function () {
   }
   legend.update([null].concat(state._colors), labels, state._statProps.getLabel());
 }
-for (const prop of ["propertyClass", "year", "stat"]) {
+for (const prop of ["propertyClass", "year", "stat", "choroScheme"]) {
   registerStateCallback(prop, updateLegend);
 }
 
